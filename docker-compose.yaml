@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: smartsplit
+      POSTGRES_PASSWORD: smartsplit
+      POSTGRES_DB: smartsplit
+    ports:
+      - "5032:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
