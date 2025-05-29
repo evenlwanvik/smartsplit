@@ -1,4 +1,4 @@
-CREATE TABLE core.user
+CREATE TABLE identity.user
 (
     id            SERIAL PRIMARY KEY,
     email         TEXT        NOT NULL UNIQUE,

@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS core.user;
+DROP TABLE IF EXISTS identity.user;
