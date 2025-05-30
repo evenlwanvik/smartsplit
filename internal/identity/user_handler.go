@@ -18,7 +18,7 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 	routeDefinitions := rest.RouteDefinitionList{
 		{
 			"GET /api/v0/identity/users",
-			h.createUserHandler,
+			h.listUsersHandler,
 		},
 		{
 			"GET /api/v0/identity/users/{id}",
@@ -33,8 +33,8 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 			h.deleteUserHandler,
 		},
 		{
-			"POST /api/v0/identity/users", // Rename to register?
-			h.createUserHandler,
+			"POST /api/v0/identity/users/register",
+			h.RegisterUserHandler,
 		},
 	}
 
@@ -43,7 +43,27 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 	}
 }
 
-func (h *UserHandler) createUserHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Decode the request body into a RegisterUser struct
+	var user CreateUser
+	if err := rest.ReadJSONFromRequest(r, &user); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	createdUser, err := h.Service.CreateUser(ctx, &user)
+	if err != nil {
+		rest.InternalServerError(w, err)
+		return
+	}
+
+	err = rest.WriteJSONResponse(w, http.StatusCreated, createdUser)
+	if err != nil {
+		rest.InternalServerError(w, err)
+		return
+	}
 }
 
 func (h *UserHandler) listUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +78,7 @@ func (h *UserHandler) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Call the service to get the user details
 	user, err := h.Service.ReadUser(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		rest.InternalServerError(w, err)
 		return
 	}
 

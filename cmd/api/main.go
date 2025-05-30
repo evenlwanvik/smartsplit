@@ -17,13 +17,24 @@ func main() {
 	slog.SetDefault(logger)
 	ctx = common.WithLogger(ctx, logger)
 
-	// postgresql dsn
-	dsn := "host=localhost port=5432 user=postgres password=yourpassword dbname=yourdb sslmode=disable"
+	dsn := common.PostgresDB{
+		Host:     "localhost",
+		Port:     5032,
+		User:     "smartsplit",
+		Password: "smartsplit",
+		Database: "smartsplit",
+		SSLMode:  "disable",
+	}
 
 	logger.Info("Connecting to the database", "dsn", dsn)
 	db, err := common.NewDB(dsn)
 	if err != nil {
 		logger.Error("Failed to connect to the database", "error", err)
+		panic(err)
+	}
+	// test Db connection
+	if err := db.Ping(); err != nil {
+		logger.Error("Failed to ping the database", "error", err)
 		panic(err)
 	}
 

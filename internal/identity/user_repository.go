@@ -27,7 +27,7 @@ func (r *UserRepository) Create(ctx context.Context, user *CreateUser) (*User, e
 	INSERT INTO identity.user (
 		email, first_name, last_name, username, password_hash
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	VALUES ($1, $2, $3, $4, $5)
 	RETURNING id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	`
 
