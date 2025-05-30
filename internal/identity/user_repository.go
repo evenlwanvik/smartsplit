@@ -1,11 +1,9 @@
-package repository
+package identity
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-
-	"github.com/evenlwanvik/smartsplit/internal/identity/models"
 )
 
 var (
@@ -24,7 +22,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 // Create inserts a new user into the identity.user table.
-func (r *UserRepository) Create(ctx context.Context, user *models.CreateUser) (*models.User, error) {
+func (r *UserRepository) Create(ctx context.Context, user *CreateUser) (*User, error) {
 	query := `
 	INSERT INTO identity.user (
 		email, first_name, last_name, username, password_hash
@@ -33,7 +31,7 @@ func (r *UserRepository) Create(ctx context.Context, user *models.CreateUser) (*
 	RETURNING id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	`
 
-	var u models.User
+	var u User
 
 	err := r.db.QueryRowContext(
 		ctx,
@@ -61,13 +59,13 @@ func (r *UserRepository) Create(ctx context.Context, user *models.CreateUser) (*
 }
 
 // GetByID fetches a user by ID.
-func (r *UserRepository) GetByID(ctx context.Context, id int) (*models.User, error) {
+func (r *UserRepository) GetByID(ctx context.Context, id int) (*User, error) {
 	query := `
 	SELECT id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	FROM identity.user
 	WHERE id = $1
 	`
-	var u models.User
+	var u User
 	err := r.db.QueryRowContext(ctx, query, id).
 		Scan(
 			&u.ID,
@@ -86,7 +84,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int) (*models.User, err
 }
 
 // List retrieves all users from the identity.user table.
-func (r *UserRepository) List(ctx context.Context) ([]*models.User, error) {
+func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 	query := `
 	SELECT id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	FROM identity.user
@@ -98,9 +96,9 @@ func (r *UserRepository) List(ctx context.Context) ([]*models.User, error) {
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*User
 	for rows.Next() {
-		var u models.User
+		var u User
 		if err := rows.Scan(
 			&u.ID,
 			&u.Email,
@@ -122,7 +120,7 @@ func (r *UserRepository) List(ctx context.Context) ([]*models.User, error) {
 }
 
 // Update modifies an existing user's details.
-func (r *UserRepository) Update(ctx context.Context, u *models.UpdateUser) error {
+func (r *UserRepository) Update(ctx context.Context, u *UpdateUser) error {
 	query := `
 	UPDATE identity.user
 	SET
@@ -172,7 +170,7 @@ func (r *UserRepository) Delete(ctx context.Context, id int) error {
 	RETURNING id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	`
 
-	var u models.User
+	var u User
 
 	err = tx.QueryRowContext(ctx, deleteQuery, id).Scan(
 		&u.ID,
