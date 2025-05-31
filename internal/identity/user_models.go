@@ -24,7 +24,6 @@ type CreateUser struct {
 }
 
 type UpdateUser struct {
-	ID           int
 	Email        *string
 	FirstName    *string
 	LastName     *string

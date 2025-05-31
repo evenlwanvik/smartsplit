@@ -30,11 +30,11 @@ func (s *UserService) ListUsers(ctx context.Context) ([]*User, error) {
 }
 
 // UpdateUser modifies user data.
-func (s *UserService) UpdateUser(ctx context.Context, user *UpdateUser) error {
-	return s.repo.Update(ctx, user)
+func (s *UserService) UpdateUser(ctx context.Context, id int, user *UpdateUser) (*User, error) {
+	return s.repo.Update(ctx, id, user)
 }
 
 // DeleteUser removes a user.
-func (s *UserService) DeleteUser(ctx context.Context, id int) error {
+func (s *UserService) DeleteUser(ctx context.Context, id int) (*User, error) {
 	return s.repo.Delete(ctx, id)
 }

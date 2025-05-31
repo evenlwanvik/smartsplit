@@ -14,6 +14,7 @@ type RouteDefinition struct {
 
 type RouteDefinitionList []RouteDefinition
 
+// Errors
 var (
 	// ErrQueryParamNotFound If query parameter key is not found
 	ErrQueryParamNotFound = errors.New("query parameter not found")
@@ -51,7 +52,8 @@ func GetPathParamInt(r *http.Request, key string) (int, error) {
 	return i, nil
 }
 
-func ReadJSONFromRequest(r *http.Request, v any) error {
+// DecodeJSONFromRequest decodes a JSON request body into the provided struct.
+func DecodeJSONFromRequest(r *http.Request, v any) error {
 	if r.Body == nil {
 		return errors.New("request body is empty")
 	}
@@ -86,10 +88,40 @@ type ErrorResponse struct {
 	Status  int    `json:"status"`
 }
 
-func InternalServerError(w http.ResponseWriter, err error) {
-	err = WriteJSONResponse(w, http.StatusInternalServerError, ErrorResponse{
-		Message: err.Error(),
+func InternalServerError(w http.ResponseWriter) {
+	err := WriteJSONResponse(w, http.StatusInternalServerError, ErrorResponse{
+		Message: "Internal Server Error",
 		Status:  http.StatusInternalServerError,
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+func UnableToGetPathParamFromRequest(w http.ResponseWriter, key string) {
+	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
+		Message: "Unable to get parameter from path: " + key,
+		Status:  http.StatusBadRequest,
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+func UnableToDecodeRequestBody(w http.ResponseWriter) {
+	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
+		Message: "Unable to decode request body",
+		Status:  http.StatusBadRequest,
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+func BadRequest(w http.ResponseWriter, message string) {
+	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
+		Message: message,
+		Status:  http.StatusBadRequest,
 	})
 	if err != nil {
 		panic(err)

@@ -120,7 +120,7 @@ func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 }
 
 // Update modifies an existing user's details.
-func (r *UserRepository) Update(ctx context.Context, u *UpdateUser) error {
+func (r *UserRepository) Update(ctx context.Context, id int, user *UpdateUser) (*User, error) {
 	query := `
 	UPDATE identity.user
 	SET
@@ -131,35 +131,42 @@ func (r *UserRepository) Update(ctx context.Context, u *UpdateUser) error {
 		password_hash = $6,
 		updated_at = NOW()
 	WHERE id = $1
+	RETURNING id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	`
-	res, err := r.db.ExecContext(
+
+	var u User
+
+	err := r.db.QueryRowContext(
 		ctx,
 		query,
-		u.ID,
-		u.Email,
-		u.FirstName,
-		u.LastName,
-		u.Username,
-		u.PasswordHash,
+		id,
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		user.Username,
+		user.PasswordHash,
+	).Scan(
+		&u.ID,
+		&u.Email,
+		&u.FirstName,
+		&u.LastName,
+		&u.Username,
+		&u.PasswordHash,
+		&u.CreatedAt,
+		&u.UpdatedAt,
 	)
 	if err != nil {
-		return err
+		return &u, err
 	}
-	count, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if count == 0 {
-		return ErrNotFound
-	}
-	return nil
+
+	return &u, nil
 }
 
 // Delete removes a user and all associated workout data.
-func (r *UserRepository) Delete(ctx context.Context, id int) error {
+func (r *UserRepository) Delete(ctx context.Context, id int) (*User, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -183,15 +190,15 @@ func (r *UserRepository) Delete(ctx context.Context, id int) error {
 		&u.UpdatedAt,
 	)
 	if err != nil {
-		return err
+		return &u, err
 	}
 
 	if u.ID == 0 {
-		return ErrNotFound
+		return &u, ErrNotFound
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return &u, err
 	}
-	return nil
+	return &u, nil
 }
