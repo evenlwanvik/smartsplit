@@ -4,6 +4,10 @@ import (
 	"context"
 )
 
+type UserClient interface {
+	ReadUser(ctx context.Context, id int)
+}
+
 // UserService handles business logic for users.
 type UserService struct {
 	repo *UserRepository

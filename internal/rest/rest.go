@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/evenlwanvik/smartsplit/internal/logging"
 )
 
 type RouteDefinition struct {
@@ -27,6 +29,23 @@ var (
 	ErrInvalidPathParam = errors.New("invalid path parameter value")
 )
 
+const (
+	UnableToDecodeRequestBody = "unable to decode request body"
+)
+
+// logError logs an error that occurred while processing a request.
+func logError(r *http.Request, err error) {
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+
+	logger.Error(
+		"an error occurred while processing request",
+		"method", r.Method,
+		"url", r.URL.String(),
+		"error", err,
+	)
+}
+
 // GetQueryParamInt retrieves a query parameter from the request URL.
 func GetQueryParamInt(r *http.Request, key string) (int, error) {
 	s := r.URL.Query().Get(key)
@@ -40,6 +59,7 @@ func GetQueryParamInt(r *http.Request, key string) (int, error) {
 	return i, nil
 }
 
+// GetPathParamInt retrieves a path parameter from the request URL.
 func GetPathParamInt(r *http.Request, key string) (int, error) {
 	s := r.PathValue(key)
 	if s == "" {
@@ -67,6 +87,8 @@ func DecodeJSONFromRequest(r *http.Request, v any) error {
 	return nil
 }
 
+// WriteJSONResponse writes a JSON response to the http.ResponseWriter with the specified
+// status code.
 func WriteJSONResponse(w http.ResponseWriter, status int, v any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -83,47 +105,30 @@ func WriteJSONResponse(w http.ResponseWriter, status int, v any) error {
 	return nil
 }
 
-type ErrorResponse struct {
-	Message string `json:"message"`
-	Status  int    `json:"status"`
+// InternalServerError sends a 500 Internal Server Error response with a generic message and
+// logs the error.
+func InternalServerError(w http.ResponseWriter, r *http.Request, err error) {
+	logError(r, err)
+	serverErrorMessage := "the server encountered a problem and could not process your request"
+	http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 }
 
-func InternalServerError(w http.ResponseWriter) {
-	err := WriteJSONResponse(w, http.StatusInternalServerError, ErrorResponse{
-		Message: "Internal Server Error",
-		Status:  http.StatusInternalServerError,
-	})
-	if err != nil {
-		panic(err)
+// BadRequest sends a 400 Bad Request response with a custom message and logs the error.
+func BadRequest(
+	w http.ResponseWriter, r *http.Request, message string, err error,
+) {
+	if message == "" {
+		message = "Bad request"
 	}
+	logError(r, err)
+	http.Error(w, message, http.StatusBadRequest)
 }
 
-func UnableToGetPathParamFromRequest(w http.ResponseWriter, key string) {
-	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
-		Message: "Unable to get parameter from path: " + key,
-		Status:  http.StatusBadRequest,
-	})
-	if err != nil {
-		panic(err)
-	}
-}
-
-func UnableToDecodeRequestBody(w http.ResponseWriter) {
-	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
-		Message: "Unable to decode request body",
-		Status:  http.StatusBadRequest,
-	})
-	if err != nil {
-		panic(err)
-	}
-}
-
-func BadRequest(w http.ResponseWriter, message string) {
-	err := WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
-		Message: message,
-		Status:  http.StatusBadRequest,
-	})
-	if err != nil {
-		panic(err)
-	}
+// UnableToGetPathParamFromRequest sends a 400 Bad Request response when a query parameter
+// cannot be retrieved from the request, along with a custom error message.
+func UnableToGetPathParamFromRequest(
+	w http.ResponseWriter, r *http.Request, key string, err error,
+) {
+	message := "unable to get path parameter: " + key
+	BadRequest(w, r, message, err)
 }

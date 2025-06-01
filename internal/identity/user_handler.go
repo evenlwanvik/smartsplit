@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/evenlwanvik/smartsplit/internal/common"
+	"github.com/evenlwanvik/smartsplit/internal/logging"
 	"github.com/evenlwanvik/smartsplit/internal/rest"
 )
 
@@ -46,13 +46,12 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 
 func (h *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := common.LoggerFromContext(ctx)
+	logger := logging.LoggerFromContext(ctx)
 
 	logger.Info("decoding request body")
 	var user CreateUser
 	if err := rest.DecodeJSONFromRequest(r, &user); err != nil {
-		logger.Error("failed to decode request body", "error", err)
-		rest.UnableToDecodeRequestBody(w)
+		rest.BadRequest(w, r, rest.UnableToDecodeRequestBody, err)
 		return
 	}
 	logger = logger.With(slog.Group("input", slog.Any("user", user)))
@@ -61,46 +60,45 @@ func (h *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request
 	createdUser, err := h.Service.CreateUser(ctx, &user)
 	if err != nil {
 		logger.Error("failed to create user", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 
 	err = rest.WriteJSONResponse(w, http.StatusCreated, createdUser)
 	if err != nil {
 		logger.Error("failed to write response", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 }
 
 func (h *UserHandler) listUsersHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := common.LoggerFromContext(ctx)
+	logger := logging.LoggerFromContext(ctx)
 
 	logger.Info("reading users")
 	users, err := h.Service.ListUsers(ctx)
 	if err != nil {
-		logger.Error("failed to list users", "error", err)
-		rest.InternalServerError(w)
+		logger.Error("failed to read users", "error", err)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 
 	err = rest.WriteJSONResponse(w, http.StatusOK, users)
 	if err != nil {
 		logger.Error("failed to write response", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 }
 
 func (h *UserHandler) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := common.LoggerFromContext(ctx)
+	logger := logging.LoggerFromContext(ctx)
 
 	id, err := rest.GetPathParamInt(r, "id")
 	if err != nil {
-		logger.Error("failed to get path param", "error", err)
-		rest.UnableToGetPathParamFromRequest(w, "id")
+		rest.UnableToGetPathParamFromRequest(w, r, "id", err)
 		return
 	}
 	logger = logger.With(slog.Group("input", slog.Int("id", id)))
@@ -108,63 +106,65 @@ func (h *UserHandler) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("reading user")
 	users, err := h.Service.ReadUser(ctx, id)
 	if err != nil {
-		logger.Error("failed to create user", "error", err)
-		rest.InternalServerError(w)
+		logger.Error("failed to read user", "error", err)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 
 	err = rest.WriteJSONResponse(w, http.StatusOK, users)
 	if err != nil {
 		logger.Error("failed to write response", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 }
 
 func (h *UserHandler) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := common.LoggerFromContext(ctx)
+	logger := logging.LoggerFromContext(ctx)
 
 	id, err := rest.GetPathParamInt(r, "id")
 	if err != nil {
-		logger.Error("failed to get path param", "error", err)
-		rest.UnableToGetPathParamFromRequest(w, "id")
+		rest.UnableToGetPathParamFromRequest(w, r, "id", err)
 		return
 	}
 
 	logger.Info("decoding request body")
 	var user UpdateUser
 	if err := rest.DecodeJSONFromRequest(r, &user); err != nil {
-		logger.Error("failed to decode request body", "error", err)
-		rest.UnableToDecodeRequestBody(w)
+		rest.BadRequest(w, r, rest.UnableToDecodeRequestBody, err)
 		return
 	}
-	logger = logger.With(slog.Group("input", slog.Any("user", user)))
+	logger = logger.With(slog.Group(
+		"input",
+		slog.Int("id", id),
+		slog.Any("user", user),
+	))
 
 	logger.Info("updating user")
 	updatedUser, err := h.Service.UpdateUser(ctx, id, &user)
 	if err != nil {
 		logger.Error("failed to update user", "error", err)
-		rest.InternalServerError(w)
+		// TODO: ErrNotFound
+		rest.InternalServerError(w, r, err)
 		return
 	}
 
 	err = rest.WriteJSONResponse(w, http.StatusOK, updatedUser)
 	if err != nil {
 		logger.Error("failed to write response", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 }
 
 func (h *UserHandler) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := common.LoggerFromContext(ctx)
+	logger := logging.LoggerFromContext(ctx)
 
 	id, err := rest.GetPathParamInt(r, "id")
 	if err != nil {
-		logger.Error("failed to get path param", "error", err)
-		rest.UnableToGetPathParamFromRequest(w, "id")
+		rest.UnableToGetPathParamFromRequest(w, r, "id", err)
 		return
 	}
 	logger = logger.With(slog.Group("input", slog.Int("id", id)))
@@ -173,14 +173,15 @@ func (h *UserHandler) deleteUserHandler(w http.ResponseWriter, r *http.Request) 
 	updatedUser, err := h.Service.DeleteUser(ctx, id)
 	if err != nil {
 		logger.Error("failed to delete user", "error", err)
-		rest.InternalServerError(w)
+		// TODO: ErrNotFound
+		rest.InternalServerError(w, r, err)
 		return
 	}
 
 	err = rest.WriteJSONResponse(w, http.StatusOK, updatedUser)
 	if err != nil {
 		logger.Error("failed to write response", "error", err)
-		rest.InternalServerError(w)
+		rest.InternalServerError(w, r, err)
 		return
 	}
 }

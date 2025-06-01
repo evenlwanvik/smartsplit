@@ -1,11 +1,13 @@
-package common
+package logging
 
 import (
 	"context"
 	"log/slog"
+
+	"github.com/evenlwanvik/smartsplit/internal/common"
 )
 
-const LoggerCtxKey ContextKey = "logger"
+const LoggerCtxKey common.ContextKey = "logger"
 
 // WithLogger embeds a logger in the given context.
 func WithLogger(ctx context.Context, logger *slog.Logger) context.Context {

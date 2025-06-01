@@ -2,22 +2,31 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"net/http"
 	"os"
 
-	"github.com/evenlwanvik/smartsplit/internal/common"
+	"github.com/evenlwanvik/smartsplit/internal/db"
 	"github.com/evenlwanvik/smartsplit/internal/identity"
+	"github.com/evenlwanvik/smartsplit/internal/logging"
 )
+
+type Module struct {
+	Name    string
+	Version string
+	DB      *sql.DB
+	id      identity.UserHandler
+}
 
 func main() {
 	ctx := context.Background()
 	// Initialize the logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	ctx = common.WithLogger(ctx, logger)
+	ctx = logging.WithLogger(ctx, logger)
 
-	dsn := common.PostgresDB{
+	dsn := db.PostgresDB{
 		Host:     "localhost",
 		Port:     5032,
 		User:     "smartsplit",
@@ -27,7 +36,7 @@ func main() {
 	}
 
 	logger.Info("Connecting to the database", "dsn", dsn)
-	db, err := common.NewDB(dsn)
+	db, err := db.NewDB(dsn)
 	if err != nil {
 		logger.Error("Failed to connect to the database", "error", err)
 		panic(err)
@@ -49,3 +58,5 @@ func main() {
 		panic(err)
 	}
 }
+
+func InitModules()
