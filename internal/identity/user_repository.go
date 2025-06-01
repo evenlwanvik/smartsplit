@@ -77,8 +77,12 @@ func (r *UserRepository) GetByID(ctx context.Context, id int) (*User, error) {
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
 	return &u, err
 }
@@ -99,7 +103,7 @@ func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 	var users []*User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(
+		err := rows.Scan(
 			&u.ID,
 			&u.Email,
 			&u.FirstName,
@@ -108,7 +112,8 @@ func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 			&u.PasswordHash,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-		); err != nil {
+		)
+		if err != nil {
 			return nil, err
 		}
 		users = append(users, &u)
@@ -156,7 +161,11 @@ func (r *UserRepository) Update(ctx context.Context, id int, user *UpdateUser) (
 		&u.UpdatedAt,
 	)
 	if err != nil {
-		return &u, err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
 
 	return &u, nil
@@ -190,14 +199,14 @@ func (r *UserRepository) Delete(ctx context.Context, id int) (*User, error) {
 		&u.UpdatedAt,
 	)
 	if err != nil {
-		return &u, err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
-
-	if u.ID == 0 {
-		return &u, ErrNotFound
-	}
-
-	if err := tx.Commit(); err != nil {
+	err = tx.Commit()
+	if err != nil {
 		return &u, err
 	}
 	return &u, nil

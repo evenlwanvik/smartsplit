@@ -30,7 +30,10 @@ var (
 )
 
 const (
-	UnableToDecodeRequestBody = "unable to decode request body"
+	UnableToDecodeRequestBody  = "unable to decode request body"
+	ResourceNotFoundMessage    = "the requested resource was not found"
+	InternalServerErrorMessage = "the server encountered a problem and could not process your request"
+	BadRequestMessage          = "the request was invalid or cannot be otherwise served"
 )
 
 // logError logs an error that occurred while processing a request.
@@ -107,21 +110,28 @@ func WriteJSONResponse(w http.ResponseWriter, status int, v any) error {
 
 // InternalServerError sends a 500 Internal Server Error response with a generic message and
 // logs the error.
-func InternalServerError(w http.ResponseWriter, r *http.Request, err error) {
+func InternalServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	logError(r, err)
-	serverErrorMessage := "the server encountered a problem and could not process your request"
-	http.Error(w, serverErrorMessage, http.StatusInternalServerError)
+	http.Error(w, InternalServerErrorMessage, http.StatusInternalServerError)
 }
 
-// BadRequest sends a 400 Bad Request response with a custom message and logs the error.
-func BadRequest(
+// BadRequestResponse sends a 400 Bad Request response with a custom message and logs the error.
+func BadRequestResponse(
 	w http.ResponseWriter, r *http.Request, message string, err error,
 ) {
 	if message == "" {
-		message = "Bad request"
+		message = BadRequestMessage
 	}
 	logError(r, err)
 	http.Error(w, message, http.StatusBadRequest)
+}
+
+// NotFoundResponse sends a 404 Not Found response with a custom message and logs the error.
+func NotFoundResponse(
+	w http.ResponseWriter, r *http.Request, err error,
+) {
+	logError(r, err)
+	http.Error(w, ResourceNotFoundMessage, http.StatusNotFound)
 }
 
 // UnableToGetPathParamFromRequest sends a 400 Bad Request response when a query parameter
@@ -130,5 +140,5 @@ func UnableToGetPathParamFromRequest(
 	w http.ResponseWriter, r *http.Request, key string, err error,
 ) {
 	message := "unable to get path parameter: " + key
-	BadRequest(w, r, message, err)
+	BadRequestResponse(w, r, message, err)
 }

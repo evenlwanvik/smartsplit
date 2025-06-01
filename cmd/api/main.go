@@ -58,5 +58,3 @@ func main() {
 		panic(err)
 	}
 }
-
-func InitModules()
