@@ -23,7 +23,7 @@ func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.initModuleLogger(mono.Logger())
 
 	m.handlers = web.WebHandlers{
-		Service: web.NewUserService(),
+		Service: web.NewWebService(),
 	}
 
 	m.logger.Info("injecting mux")

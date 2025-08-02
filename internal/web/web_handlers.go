@@ -26,7 +26,7 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 
 	for _, d := range routeDefinitions {
 		logger.Info("adding route", "route", d.Path)
-		mux.HandleFunc(d.Path, d.Handler)
+		mux.Handle(d.Path, d.Handler)
 	}
 }
 
