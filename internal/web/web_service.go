@@ -15,6 +15,16 @@ type WebService struct {
 	tpl *template.Template
 }
 
+// NewUserService creates a new UserService.
+func NewUserService() *WebService {
+	tpl := template.Must(
+		template.ParseFS(htmlFS, "templates/*.html"),
+	)
+	return &WebService{
+		tpl: tpl,
+	}
+}
+
 // ShowIndex executes the index template
 func (svc *WebService) ShowIndex(w http.ResponseWriter) error {
 	data := map[string]interface{}{

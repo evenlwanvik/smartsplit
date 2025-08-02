@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"database/sql"
 	"log/slog"
 	"net/http"
 
@@ -16,13 +15,16 @@ type Module struct {
 	logger   *slog.Logger
 	name     string
 	version  string
-	db       *sql.DB
 	mux      *http.ServeMux
 	handlers web.WebHandlers
 }
 
 func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.initModuleLogger(mono.Logger())
+
+	m.handlers = web.WebHandlers{
+		Service: web.NewUserService(),
+	}
 
 	m.logger.Info("injecting mux")
 	m.mux = mono.Mux()
