@@ -8,7 +8,7 @@ type UserClient interface {
 	ReadUser(ctx context.Context, id int) (*User, error)
 }
 
-// UserService handles business logic for users.
+// UserService handles business logic for usersvc.
 type UserService struct {
 	repo *UserRepository
 }
@@ -19,26 +19,26 @@ func NewUserService(repo *UserRepository) *UserService {
 }
 
 // CreateUser registers a new user.
-func (s *UserService) CreateUser(ctx context.Context, user *CreateUser) (*User, error) {
-	return s.repo.Create(ctx, user)
+func (svc *UserService) CreateUser(ctx context.Context, user *CreateUser) (*User, error) {
+	return svc.repo.Create(ctx, user)
 }
 
 // ReadUser fetches by ID.
-func (s *UserService) ReadUser(ctx context.Context, id int) (*User, error) {
-	return s.repo.GetByID(ctx, id)
+func (svc *UserService) ReadUser(ctx context.Context, id int) (*User, error) {
+	return svc.repo.GetByID(ctx, id)
 }
 
-// ListUsers returns all users.
-func (s *UserService) ListUsers(ctx context.Context) ([]*User, error) {
-	return s.repo.List(ctx)
+// ListUsers returns all usersvc.
+func (svc *UserService) ListUsers(ctx context.Context) ([]*User, error) {
+	return svc.repo.List(ctx)
 }
 
 // UpdateUser modifies user data.
-func (s *UserService) UpdateUser(ctx context.Context, id int, user *UpdateUser) (*User, error) {
-	return s.repo.Update(ctx, id, user)
+func (svc *UserService) UpdateUser(ctx context.Context, id int, user *UpdateUser) (*User, error) {
+	return svc.repo.Update(ctx, id, user)
 }
 
 // DeleteUser removes a user.
-func (s *UserService) DeleteUser(ctx context.Context, id int) (*User, error) {
-	return s.repo.Delete(ctx, id)
+func (svc *UserService) DeleteUser(ctx context.Context, id int) (*User, error) {
+	return svc.repo.Delete(ctx, id)
 }

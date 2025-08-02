@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -15,7 +16,8 @@ type UserHandler struct {
 }
 
 // RegisterRoutes hooks up endpoints.
-func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
+func (h *UserHandler) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
+	logger := logging.LoggerFromContext(ctx)
 
 	routeDefinitions := rest.RouteDefinitionList{
 		{
@@ -41,6 +43,7 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 	}
 
 	for _, d := range routeDefinitions {
+		logger.Info("adding route", "route", d.Path)
 		mux.Handle(d.Path, d.Handler)
 	}
 }

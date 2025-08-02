@@ -10,7 +10,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/evenlwanvik/smartsplit/cmd/api/identity"
+	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/identity"
+
 	"github.com/evenlwanvik/smartsplit/internal/config"
 	"github.com/evenlwanvik/smartsplit/internal/db"
 	"github.com/evenlwanvik/smartsplit/internal/monolith"

@@ -18,7 +18,7 @@ type HealthCheckMessage struct {
 // @Produce json
 // @Success 200 {object} HealthCheckMessage "OK"
 // @Failure 500 {object} rest.ErrorMessage "Internal Server Error"
-// @Router /api/v1/healthcheck [get]
+// @Router /smartsplit/v1/healthcheck [get]
 func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	healthCheckMessage := HealthCheckMessage{
 		Status:      "available",

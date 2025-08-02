@@ -1,0 +1,18 @@
+{{ define "title" }}Dashboard – SmartSplit{{ end }}
+{{ define "body" }}
+<div
+        id="plan"
+        hx-get="/api/workout/suggestion"
+        hx-trigger="load"
+        hx-swap="innerHTML">
+    Loading your workout…
+</div>
+<form
+        id="entry-form"
+        hx-post="/api/workout/plan"
+        hx-target="#plan"
+        hx-swap="innerHTML">
+    <!-- inputs for sets/reps -->
+    <button type="submit">Submit</button>
+</form>
+{{ end }}

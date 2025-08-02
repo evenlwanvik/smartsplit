@@ -37,7 +37,7 @@ func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.mux = mono.Mux()
 
 	m.logger.Info("registering routes")
-	m.handlers.RegisterRoutes(m.mux)
+	m.handlers.RegisterRoutes(ctx, m.mux)
 }
 
 func (m *Module) PostSetup() {
