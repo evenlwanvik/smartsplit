@@ -8,13 +8,13 @@ import (
 	"github.com/evenlwanvik/smartsplit/internal/rest"
 )
 
-// WebHandler defines HTTP handlers for web pages.
-type WebHandler struct {
+// WebHandlers defines HTTP handlers for web pages.
+type WebHandlers struct {
 	Service *WebService
 }
 
 // RegisterRoutes hooks up endpoints.
-func (h *WebHandler) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
+func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 	logger := logging.LoggerFromContext(ctx)
 
 	routeDefinitions := rest.RouteDefinitionList{
@@ -30,7 +30,7 @@ func (h *WebHandler) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 	}
 }
 
-func (h *WebHandler) getIndexHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WebHandlers) getIndexHandler(w http.ResponseWriter, r *http.Request) {
 	err := h.Service.ShowIndex(w)
 	if err != nil {
 		rest.InternalServerErrorResponse(w, r, err)

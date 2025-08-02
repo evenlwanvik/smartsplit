@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/evenlwanvik/smartsplit/internal/identity"
 	"github.com/evenlwanvik/smartsplit/internal/monolith"
+	"github.com/evenlwanvik/smartsplit/internal/web"
 )
 
 const moduleName string = "web"
@@ -18,7 +18,7 @@ type Module struct {
 	version  string
 	db       *sql.DB
 	mux      *http.ServeMux
-	handlers identity.UserHandler
+	handlers web.WebHandlers
 }
 
 func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {

@@ -16,9 +16,11 @@ type Monolith interface {
 
 type Modules struct {
 	Identity Identity
+	Web      Web
 }
 
 type Identity interface{}
+type Web interface{}
 
 type Module interface {
 	// Setup sets up the module using the context and resources from the
