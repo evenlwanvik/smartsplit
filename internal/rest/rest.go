@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -28,6 +29,10 @@ var (
 	// ErrInvalidPathParam If path parameter value is invalid
 	ErrInvalidPathParam = errors.New("invalid path parameter value")
 )
+
+type ErrorMessage struct {
+	Message any `json:"message"`
+}
 
 const (
 	UnableToDecodeRequestBody  = "unable to decode request body"
@@ -141,4 +146,104 @@ func UnableToGetPathParamFromRequest(
 ) {
 	message := "unable to get path parameter: " + key
 	BadRequestResponse(w, r, message, err)
+}
+
+func LogError(r *http.Request, err error) {
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+
+	logger.Error(
+		"an error occurred",
+		"request_method", r.Method,
+		"request_url", r.URL.String(),
+		"error", err,
+	)
+}
+
+func writeJSON(
+	w http.ResponseWriter,
+	status int,
+	data any,
+	headers http.Header,
+) error {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	js = append(js, '\n')
+
+	for key, values := range headers {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if _, err = w.Write(js); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ErrorResponse(
+	w http.ResponseWriter,
+	r *http.Request,
+	status int,
+	message any,
+) {
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+
+	logger.Info("writing error response", slog.Int("status", status), slog.Any("message", message))
+	err := writeJSON(w, status, ErrorMessage{Message: message}, nil)
+	if err != nil {
+		logger.Error("error writing response", "error", err)
+		LogError(r, err)
+		w.WriteHeader(500)
+	}
+}
+
+func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logger := logging.LoggerFromContext(r.Context())
+
+	LogError(r, err)
+	const serverErrorMsg string = "the server encountered a problem and could not process your request"
+
+	logger.Info(serverErrorMsg)
+	ErrorResponse(w, r, http.StatusInternalServerError, serverErrorMsg)
+}
+
+func RespondWithJSON(
+	w http.ResponseWriter,
+	r *http.Request,
+	status int,
+	data any,
+	headers http.Header,
+) {
+	logger := logging.LoggerFromContext(r.Context())
+
+	logger.Info("marshalling data")
+	js, err := json.Marshal(data)
+	if err != nil {
+		ServerErrorResponse(w, r, err)
+	}
+
+	js = append(js, '\n')
+
+	logger.Info("adding headers")
+	for key, values := range headers {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+
+	logger.Info("writing response")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if _, err = w.Write(js); err != nil {
+		ServerErrorResponse(w, r, err)
+	}
 }
