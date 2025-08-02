@@ -26,6 +26,3 @@ go.work.sum
 
 # IntelliJ IDEA project files
 .idea/
-
-# Ignore sqlite db
-db/smartsplit.db

@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,6 +12,7 @@ import (
 
 	"github.com/evenlwanvik/smartsplit/cmd/api/identity"
 	"github.com/evenlwanvik/smartsplit/internal/config"
+	"github.com/evenlwanvik/smartsplit/internal/db"
 	"github.com/evenlwanvik/smartsplit/internal/monolith"
 )
 
@@ -42,10 +41,20 @@ func run() error {
 	slog.SetDefault(logger)
 
 	logger.Info("initializing database connection")
-	os.MkdirAll("db", os.ModePerm) // ensure db dir in root
-	db, err := sql.Open("sqlite3", "db/smartsplit.db")
+	dsn := db.PostgresDB{
+		Host:     "localhost",
+		Port:     5032,
+		User:     "smartsplit",
+		Password: "smartsplit",
+		Database: "smartsplit",
+		SSLMode:  "disable",
+	}
+
+	logger.Info("Connecting to the database", "dsn", dsn)
+	db, err := db.NewDB(dsn)
 	if err != nil {
-		log.Fatalf("failed to connect to SQLite: %v", err)
+		logger.Error("Failed to connect to the database", "error", err)
+		return err
 	}
 	defer func() {
 		if err := db.Close(); err != nil {
