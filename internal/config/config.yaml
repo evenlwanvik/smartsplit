@@ -1,0 +1,12 @@
+# NOTE: This is only default values. It is expected that most these
+# values will be overriden using environment variables in live environments.
+#
+# NOTE: The field names must match exactly with the struct in the config.go
+# file, but is not case sensitive.
+app:
+  env: "development"
+  port: 5000
+  limiter:
+    rps: 100
+    burst: 300
+    enabled: true

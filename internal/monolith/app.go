@@ -9,56 +9,92 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 	"time"
 
 	"github.com/justinas/alice"
+
+	"github.com/evenlwanvik/smartsplit/internal/config"
 )
 
 type Application struct {
 	db      *sql.DB
 	mux     *http.ServeMux
+	config  *config.Config
 	logger  *slog.Logger
 	modules Modules
 	done    <-chan os.Signal
 }
 
 func NewApplication(
-	db *sql.DB, mux *http.ServeMux, logger *slog.Logger, modules Modules,
+	db *sql.DB,
+	mux *http.ServeMux,
+	logger *slog.Logger,
+	config *config.Config,
+	modules Modules,
 ) *Application {
 	return &Application{
 		db:      db,
 		mux:     mux,
 		logger:  logger,
+		config:  config,
 		modules: modules,
 	}
 }
 
-func (app *Application) DB() *sql.DB          { return app.db }
-func (app *Application) Logger() *slog.Logger { return app.logger }
-func (app *Application) Mux() *http.ServeMux  { return app.mux }
+func (app *Application) DB() *sql.DB            { return app.db }
+func (app *Application) Logger() *slog.Logger   { return app.logger }
+func (app *Application) Mux() *http.ServeMux    { return app.mux }
+func (app *Application) Config() *config.Config { return app.config }
 
-func (app *Application) SetupModules(ctx context.Context) error {
-	for _, module := range app.modules {
-		if err := module.Setup(ctx, app); err != nil {
-			return err
+func (app *Application) SetupModules(ctx context.Context) {
+	app.logger.Info("running setupModules")
+	val := reflect.ValueOf(app.modules)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		if module, ok := field.Interface().(Module); ok {
+			module.Setup(ctx, app)
 		}
 	}
-	return nil
 }
 
-func (app *Application) PostSetupModules(ctx context.Context) error {
-	for _, module := range app.modules {
-		if err := module.PostSetup(ctx); err != nil {
-			return err
+func (app *Application) PostSetupModules() {
+	app.logger.Info("running postSetupModules")
+	val := reflect.ValueOf(app.modules)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+
+		if module, ok := field.Interface().(Module); ok {
+			module.PostSetup()
 		}
 	}
-	return nil
 }
 
 func (app *Application) ShutdownModules() {
-	for i := len(app.modules) - 1; i >= 0; i-- {
-		app.modules[i].Shutdown()
+	app.logger.Info("running shutdownModules")
+	val := reflect.ValueOf(app.modules)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+
+		if module, ok := field.Interface().(Module); ok {
+			module.Shutdown()
+		}
 	}
 }
 

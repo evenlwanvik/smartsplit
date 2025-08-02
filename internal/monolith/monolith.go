@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
-
-	"github.com/evenlwanvik/smartsplit/internal/identity"
 )
 
 // Monolith is the interface that represents the main application
@@ -16,11 +14,11 @@ type Monolith interface {
 	Mux() *http.ServeMux
 }
 
-type Modules []Module
-
-type Identity interface {
-	identity.UserClient
+type Modules struct {
+	Identity Identity
 }
+
+type Identity interface{}
 
 type Module interface {
 	// Setup sets up the module using the context and resources from the
@@ -35,13 +33,13 @@ type Module interface {
 	// If resources are required from other modules as part of the startup
 	// process, add a PostSetup or Startup method, and set it to run after
 	// Setup has completed.
-	Setup(ctx context.Context, app Monolith) error
+	Setup(ctx context.Context, app Monolith)
 	// PostSetup performs any additional setup tasks, usually in cases where
 	// external resources from other modules were required, and a guarantee
 	// that the initial setup of any given module is completed to avoid
 	// segmentation faults. Note that API calls through HTTP will not work
 	// if the Monolith server is not running.
-	PostSetup(ctx context.Context) error
+	PostSetup()
 	// Shutdown performs any necessary cleanup tasks before application
 	// termination. Examples of such tasks could be closing channels,
 	// connections created by the module and so on.

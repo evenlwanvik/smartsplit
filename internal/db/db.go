@@ -19,6 +19,7 @@ type PostgresDB struct {
 
 var (
 	ErrUnableToCreateDB = errors.New("unable to create db connection")
+	ErrDBUnreachable    = errors.New("database is unreachable")
 )
 
 func NewDB(cred PostgresDB) (*sql.DB, error) {
@@ -30,6 +31,10 @@ func NewDB(cred PostgresDB) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, ErrUnableToCreateDB
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrDBUnreachable, err)
 	}
 	return db, nil
 }

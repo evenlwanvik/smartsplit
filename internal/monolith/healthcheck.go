@@ -3,6 +3,7 @@ package monolith
 import (
 	"net/http"
 
+	"github.com/evenlwanvik/smartsplit/internal/config"
 	"github.com/evenlwanvik/smartsplit/internal/rest"
 )
 
@@ -18,7 +19,7 @@ type HealthCheckMessage struct {
 // @Success 200 {object} HealthCheckMessage "OK"
 // @Failure 500 {object} rest.ErrorMessage "Internal Server Error"
 // @Router /api/v1/healthcheck [get]
-func (app *MonolithApplication) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	healthCheckMessage := HealthCheckMessage{
 		Status:      "available",
 		Environment: app.config.App.Env,

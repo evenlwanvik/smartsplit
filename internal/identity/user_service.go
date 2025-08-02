@@ -5,7 +5,7 @@ import (
 )
 
 type UserClient interface {
-	ReadUser(ctx context.Context, id int)
+	ReadUser(ctx context.Context, id int) (*User, error)
 }
 
 // UserService handles business logic for users.

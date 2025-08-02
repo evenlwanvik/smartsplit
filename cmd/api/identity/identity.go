@@ -1,23 +1,51 @@
 package identity
 
 import (
+	"context"
 	"database/sql"
+	"log/slog"
+	"net/http"
 
 	"github.com/evenlwanvik/smartsplit/internal/identity"
+	"github.com/evenlwanvik/smartsplit/internal/monolith"
 )
 
+const moduleName string = "identity"
+
 type Module struct {
-	Name    string
-	Version string
-	DB      *sql.DB
-	id      identity.UserHandler
+	logger   *slog.Logger
+	name     string
+	version  string
+	db       *sql.DB
+	mux      *http.ServeMux
+	handlers identity.UserHandler
 }
 
-func (m *Module) Init() error {
-	var err error
-	m.id, err = identity.NewUserHandler(m.DB)
-	if err != nil {
-		return err
+func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
+	m.initModuleLogger(mono.Logger())
+
+	m.logger.Info("injecting database connection pool")
+	m.db = mono.DB()
+
+	m.handlers = identity.UserHandler{
+		Service: identity.NewUserService(
+			identity.NewUserRepository(m.db),
+		),
 	}
-	return nil
+
+	m.logger.Info("injecting mux")
+	m.mux = mono.Mux()
+
+	m.logger.Info("registering routes")
+	m.handlers.RegisterRoutes(m.mux)
+}
+
+func (m *Module) PostSetup() {
+	m.logger.Info("performing post setup process")
+}
+
+func (m *Module) Shutdown() {}
+
+func (m *Module) initModuleLogger(monoLogger *slog.Logger) {
+	m.logger = monoLogger.With(slog.Group("module", slog.String("name", moduleName)))
 }
