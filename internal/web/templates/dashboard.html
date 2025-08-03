@@ -1,18 +1,24 @@
-{{ define "title" }}Dashboard – SmartSplit{{ end }}
-{{ define "body" }}
-<div
-        id="plan"
-        hx-get="/api/workout/suggestion"
-        hx-trigger="load"
-        hx-swap="innerHTML">
-    Loading your workout…
-</div>
-<form
-        id="entry-form"
-        hx-post="/api/workout/plan"
-        hx-target="#plan"
-        hx-swap="innerHTML">
-    <!-- inputs for sets/reps -->
-    <button type="submit">Submit</button>
-</form>
-{{ end }}
+<!-- File: templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SmartSplit - Dashboard</title>
+</head>
+<body>
+<nav>
+    <a href="/">Home</a> |
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/counters">Counters</a>
+</nav>
+<main>
+    <h1>Dashboard</h1>
+    <p>Overview of your workouts:</p>
+    <ul>
+        <li><a href="/plan/today">Today's Plan</a></li>
+        <li><a href="/history">Workout History</a></li>
+    </ul>
+</main>
+</body>
+</html>

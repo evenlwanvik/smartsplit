@@ -22,9 +22,14 @@ func NewWebService() *WebService {
 	)}
 }
 
-// ShowIndex executes the index template
-func (svc *WebService) ShowIndex(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// assuming base.html includes `{{ template "index.html" . }}`
-	return svc.tpl.ExecuteTemplate(w, "base.html", nil)
+func (svc *WebService) Index(w http.ResponseWriter) error {
+	return svc.tpl.ExecuteTemplate(w, "index.html", nil)
+}
+
+func (svc *WebService) Dashboard(w http.ResponseWriter) error {
+	return svc.tpl.ExecuteTemplate(w, "dashboard.html", nil)
+}
+
+func (svc *WebService) Counters(w http.ResponseWriter) error {
+	return svc.tpl.ExecuteTemplate(w, "counters.html", nil)
 }

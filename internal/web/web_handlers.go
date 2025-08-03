@@ -19,8 +19,16 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 
 	routeDefinitions := rest.RouteDefinitionList{
 		{
-			"GET /index",
-			h.getIndexHandler,
+			"GET /",
+			h.indexHandler,
+		},
+		{
+			"GET /dashboard",
+			h.dashboardHandler,
+		},
+		{
+			"GET /counters",
+			h.counterHandler,
 		},
 	}
 
@@ -30,9 +38,29 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 	}
 }
 
-func (h *WebHandlers) getIndexHandler(w http.ResponseWriter, r *http.Request) {
-	err := h.Service.ShowIndex(w)
+func (h *WebHandlers) indexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	err := h.Service.Index(w)
 	if err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (h *WebHandlers) dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := h.Service.Dashboard(w); err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (h *WebHandlers) counterHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := h.Service.Dashboard(w); err != nil {
 		rest.InternalServerErrorResponse(w, r, err)
 		return
 	}
