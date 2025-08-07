@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS workout.muscle;
+DROP TABLE IF EXISTS workout.muscles;

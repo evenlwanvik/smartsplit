@@ -1,1 +1,1 @@
-DROP SCHEMA IF EXISTS workouts;
+DROP SCHEMA IF EXISTS workout;

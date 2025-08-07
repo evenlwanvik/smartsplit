@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS workout.muscle
+CREATE TABLE IF NOT EXISTS workout.muscles
 (
     id           SERIAL PRIMARY KEY,
     name         TEXT NOT NULL,

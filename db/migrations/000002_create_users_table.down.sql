@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS identity.user;
+DROP TABLE IF EXISTS identity.users;
