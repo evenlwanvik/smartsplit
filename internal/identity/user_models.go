@@ -24,11 +24,11 @@ type CreateUser struct {
 }
 
 type UpdateUser struct {
-	Email        *string
-	FirstName    *string
-	LastName     *string
-	Username     *string
-	PasswordHash *string
+	Email        *string `json:"email"`
+	FirstName    *string `json:"first_name"`
+	LastName     *string `json:"last_name"`
+	Username     *string `json:"user_name"`
+	PasswordHash *string `json:"password_hash"`
 }
 
 type RegisterUser struct {

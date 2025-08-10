@@ -20,15 +20,19 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 	routeDefinitions := rest.RouteDefinitionList{
 		{
 			"GET /",
-			h.indexHandler,
+			h.indexPage,
 		},
 		{
 			"GET /dashboard",
-			h.dashboardHandler,
+			h.dashboardPage,
 		},
 		{
 			"GET /counters",
-			h.counterHandler,
+			h.counterPage,
+		},
+		{
+			"GET /muscles",
+			h.musclesPage,
 		},
 	}
 
@@ -38,7 +42,7 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 	}
 }
 
-func (h *WebHandlers) indexHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WebHandlers) indexPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	err := h.Service.Index(w)
@@ -48,7 +52,7 @@ func (h *WebHandlers) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WebHandlers) dashboardHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WebHandlers) dashboardPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	if err := h.Service.Dashboard(w); err != nil {
@@ -57,10 +61,21 @@ func (h *WebHandlers) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WebHandlers) counterHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WebHandlers) counterPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	if err := h.Service.Dashboard(w); err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (h *WebHandlers) musclesPage(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := h.Service.Muscles(ctx, w); err != nil {
 		rest.InternalServerErrorResponse(w, r, err)
 		return
 	}
