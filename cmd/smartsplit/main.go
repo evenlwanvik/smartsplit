@@ -12,6 +12,7 @@ import (
 
 	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/identity"
 	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/web"
+	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/workout"
 
 	"github.com/evenlwanvik/smartsplit/internal/config"
 	"github.com/evenlwanvik/smartsplit/internal/db"
@@ -84,6 +85,7 @@ func run() error {
 		monolith.Modules{
 			Identity: &identity.Module{},
 			Web:      &web.Module{},
+			Workout:  &workout.Module{},
 		},
 	)
 

@@ -47,6 +47,9 @@ func (app *Application) DB() *sql.DB            { return app.db }
 func (app *Application) Logger() *slog.Logger   { return app.logger }
 func (app *Application) Mux() *http.ServeMux    { return app.mux }
 func (app *Application) Config() *config.Config { return app.config }
+func (app *Application) Modules() *Modules {
+	return &app.modules
+}
 
 func (app *Application) SetupModules(ctx context.Context) {
 	app.logger.Info("running setupModules")

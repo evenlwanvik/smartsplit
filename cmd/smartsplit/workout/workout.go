@@ -1,34 +1,39 @@
-package web
+package workout
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"net/http"
 
 	"github.com/evenlwanvik/smartsplit/internal/monolith"
-	"github.com/evenlwanvik/smartsplit/internal/web"
 	"github.com/evenlwanvik/smartsplit/internal/workout"
 )
 
-const moduleName string = "web"
+const moduleName string = "workout"
 
 type Module struct {
 	logger   *slog.Logger
 	name     string
 	version  string
+	db       *sql.DB
 	mux      *http.ServeMux
-	handlers web.WebHandlers
-	workout  workout.Client
+	handlers workout.Handlers
+	svc      *workout.Service
 }
 
 func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.initModuleLogger(mono.Logger())
 
-	m.handlers = web.WebHandlers{
-		Service: web.NewWebService(mono.Modules().Workout),
+	m.logger.Info("injecting database connection pool")
+	m.db = mono.DB()
+
+	m.svc = workout.NewService(workout.NewRepository(m.db))
+
+	m.handlers = workout.Handlers{
+		Svc: m.svc,
 	}
 
-	// TODO: We have to wait for the monolith to be fully initialized before we can inject modules
 	m.logger.Info("injecting mux")
 	m.mux = mono.Mux()
 

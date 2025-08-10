@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
+
+	"github.com/evenlwanvik/smartsplit/internal/workout"
 )
 
 // Monolith is the interface that represents the main application
@@ -12,15 +14,20 @@ type Monolith interface {
 	DB() *sql.DB
 	Logger() *slog.Logger
 	Mux() *http.ServeMux
+	Modules() *Modules
 }
 
 type Modules struct {
 	Identity Identity
 	Web      Web
+	Workout  Workout
 }
 
 type Identity interface{}
 type Web interface{}
+type Workout interface {
+	workout.Client
+}
 
 type Module interface {
 	// Setup sets up the module using the context and resources from the
