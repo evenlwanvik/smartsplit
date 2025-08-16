@@ -6,6 +6,6 @@ import (
 	"github.com/evenlwanvik/smartsplit/internal/workout"
 )
 
-func (m *Module) GetMuscles(ctx context.Context) ([]*workout.Muscle, error) {
-	return m.svc.GetMuscles(ctx)
+func (m *Module) ReadMuscles(ctx context.Context) ([]*workout.Muscle, error) {
+	return m.svc.ReadMuscles(ctx)
 }

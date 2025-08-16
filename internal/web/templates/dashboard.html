@@ -8,16 +8,35 @@
     <section class="grid" style="grid-template-columns:1fr;">
         <article class="card">
             <header style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>Quick log</strong>
-                <small class="muted">Press <span class="kbd">/</span> to focus</small>
+                <strong>New workout</strong>
             </header>
-            <form hx-post="/plans" hx-target="#recent-plans" hx-swap="beforebegin" _="on submit reset()">
-                <fieldset role="group">
-                    <input id="q" name="query" placeholder="e.g. chest + triceps, or 6x400m @ hard" required _="on keydown[key is '/'] from window halt default then focus() then select()">
-                    <button type="submit">Log</button>
-                </fieldset>
-                <small class="muted">Free-text: I'll parse into PlanEntries tied to Muscles.</small>
-            </form>
+            <button data-target="new-workout-modal" onclick="document.getElementById('new-workout-modal').showModal()">
+                New workout
+            </button>
+            <dialog id="new-workout-modal">
+                <article>
+                    <header>
+                        <strong>Select muscles</strong>
+                        <button onclick="this.closest('dialog').close()" aria-label="Close">✕</button>
+                    </header>
+                    <form hx-post="/plans" hx-target="#recent-plans" hx-swap="beforebegin" method="dialog">
+                        <fieldset>
+                            <legend>Choose muscle groups:</legend>
+                            <div class="chips">
+                                {{ range .Muscles }}  <!-- Assuming your Go template provides .Muscles -->
+                                <label class="chip">
+                                    <input type="checkbox" name="muscles" value="{{ .Name }}">
+                                    {{ .Name }}
+                                </label>
+                                {{ end }}
+                            </div>
+                        </fieldset>
+                        <footer>
+                            <button type="submit">Log workout</button>
+                        </footer>
+                    </form>
+                </article>
+            </dialog>
         </article>
         <article class="card">
             <header><strong>Recent activity</strong></header>

@@ -39,7 +39,7 @@ func (h *Handlers) listMuscles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := logging.LoggerFromContext(ctx)
 
-	ms, err := h.Svc.GetMuscles(r.Context())
+	ms, err := h.Svc.ReadMuscles(r.Context())
 	if err != nil {
 		rest.InternalServerErrorResponse(w, r, err)
 		return

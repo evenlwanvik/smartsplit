@@ -5,7 +5,7 @@ import (
 )
 
 type Client interface {
-	GetMuscles(ctx context.Context) ([]*Muscle, error)
+	ReadMuscles(ctx context.Context) ([]*Muscle, error)
 }
 
 type Service struct {
@@ -16,7 +16,7 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) GetMuscles(ctx context.Context) ([]*Muscle, error) {
+func (s *Service) ReadMuscles(ctx context.Context) ([]*Muscle, error) {
 	return s.repo.SelectMuscles(ctx)
 }
 

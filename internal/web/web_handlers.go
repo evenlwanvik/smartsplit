@@ -22,10 +22,6 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 			"GET /dashboard",
 			h.dashboardPage,
 		},
-		{
-			"GET /counters",
-			h.counterPage,
-		},
 	}
 
 	for _, d := range routeDefinitions {
@@ -35,18 +31,11 @@ func (h *WebHandlers) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 }
 
 func (h *WebHandlers) dashboardPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	if err := h.Service.Dashboard(w); err != nil {
-		rest.InternalServerErrorResponse(w, r, err)
-		return
-	}
-}
-
-func (h *WebHandlers) counterPage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	if err := h.Service.Dashboard(w); err != nil {
+	if err := h.Service.Dashboard(ctx, w); err != nil {
 		rest.InternalServerErrorResponse(w, r, err)
 		return
 	}
