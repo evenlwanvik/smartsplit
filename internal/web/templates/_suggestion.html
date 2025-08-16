@@ -1,0 +1,15 @@
+{{ define "_suggestion.html" }}
+{{ if . }}
+<div>
+    <div><strong>Primary:</strong> {{ .PrimaryLabel }}</div>
+    {{ if .Accessories }}<div><strong>Accessory:</strong> {{ .Accessories }}</div>{{ end }}
+    {{ if .Avoid }}<div class="muted"><strong>Avoid today:</strong> {{ .Avoid }}</div>{{ end }}
+</div>
+<div style="display:flex; gap:.5rem; margin-top:.6rem;">
+    <button hx-post="/plans/from-suggestion" hx-vals='{"id":"{{ .ID }}"}' hx-target="#recent-plans" hx-swap="beforebegin">Accept</button>
+    <button class="secondary" hx-get="/suggestion?alt=1" hx-target="#suggestion" hx-swap="outerHTML">Another option</button>
+</div>
+{{ else }}
+<div class="muted">No suggestion yet—log something to get started.</div>
+{{ end }}
+{{ end }}

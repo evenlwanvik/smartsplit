@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"html/template"
 	"net/http"
 
@@ -27,29 +26,47 @@ func NewWebService(workout workout.Client) *WebService {
 	}
 }
 
-func (svc *WebService) Index(w http.ResponseWriter) error {
-	return svc.tpl.ExecuteTemplate(w, "index.html", nil)
+type DashboardVM struct {
+	Suggestion    *SuggestionVM
+	RecentMuscles []MuscleVM
+	KPI           KPI
 }
+
+type SuggestionVM struct {
+	ID           string
+	PrimaryLabel string
+	Accessories  string
+	Avoid        string
+}
+
+type KPI struct {
+	Sessions      int
+	UniqueMuscles int
+	RunKM         int
+}
+
+type PlanItemVM struct {
+	Date    string
+	Notes   string
+	Entries []PlanEntryVM
+}
+
+type PlanEntryVM struct {
+	MuscleName string
+	Sets       int
+}
+
+type MuscleVM struct{ Name string }
 
 func (svc *WebService) Dashboard(w http.ResponseWriter) error {
-	return svc.tpl.ExecuteTemplate(w, "dashboard.html", nil)
-}
-
-func (svc *WebService) Counters(w http.ResponseWriter) error {
-	return svc.tpl.ExecuteTemplate(w, "counters.html", nil)
+	vm := DashboardVM{
+		Suggestion:    &SuggestionVM{ID: "seed", PrimaryLabel: "Upper Pull (back, biceps)", Accessories: "Core stability", Avoid: "Chest"},
+		RecentMuscles: []MuscleVM{{Name: "Chest"}, {Name: "Quads"}},
+		KPI:           KPI{Sessions: 3, UniqueMuscles: 8, RunKM: 18},
+	}
+	return svc.tpl.ExecuteTemplate(w, "dashboard.html", vm)
 }
 
 type MuscleInput struct {
 	Muscles []*workout.Muscle
-}
-
-func (svc *WebService) Muscles(ctx context.Context, w http.ResponseWriter) error {
-	muscles, err := svc.workout.GetMuscles(ctx)
-	if err != nil {
-		return err
-	}
-
-	tmplData := MuscleInput{Muscles: muscles}
-
-	return svc.tpl.ExecuteTemplate(w, "muscles.html", tmplData)
 }

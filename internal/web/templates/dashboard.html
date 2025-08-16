@@ -1,24 +1,50 @@
-<!-- File: templates/dashboard.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SmartSplit - Dashboard</title>
-</head>
-<body>
-<nav>
-    <a href="/">Home</a> |
-    <a href="/dashboard">Dashboard</a> |
-    <a href="/counters">Counters</a>
-</nav>
-<main>
-    <h1>Dashboard</h1>
-    <p>Overview of your workouts:</p>
-    <ul>
-        <li><a href="/plan/today">Today's Plan</a></li>
-        <li><a href="/history">Workout History</a></li>
-    </ul>
-</main>
-</body>
-</html>
+{{ define "content" }}
+<section class="hero" id="suggestion" hx-get="/suggestion" hx-trigger="load" hx-target="#suggestion" hx-swap="outerHTML">
+    <div class="big">Today's suggestion</div>
+    <div class="muted">Based on your last plans and muscle cooldowns.</div>
+    {{ template "_suggestion.html" .Suggestion }}
+</section>
+<div class="grid" style="margin-top:1rem;">
+    <section class="grid" style="grid-template-columns:1fr;">
+        <article class="card">
+            <header style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>Quick log</strong>
+                <small class="muted">Press <span class="kbd">/</span> to focus</small>
+            </header>
+            <form hx-post="/plans" hx-target="#recent-plans" hx-swap="beforebegin" _="on submit reset()">
+                <fieldset role="group">
+                    <input id="q" name="query" placeholder="e.g. chest + triceps, or 6x400m @ hard" required _="on keydown[key is '/'] from window halt default then focus() then select()">
+                    <button type="submit">Log</button>
+                </fieldset>
+                <small class="muted">Free-text: I'll parse into PlanEntries tied to Muscles.</small>
+            </form>
+        </article>
+        <article class="card">
+            <header><strong>Recent activity</strong></header>
+            <ol id="recent-plans" class="list-unstyled" hx-get="/plans/recent" hx-trigger="load" hx-swap="innerHTML">
+                <li class="muted">Loading…</li>
+            </ol>
+            <footer><a href="/history">See history →</a></footer>
+        </article>
+    </section>
+    <aside class="grid" style="grid-template-columns:1fr;">
+        <article class="card">
+            <header><strong>Recently trained muscles</strong></header>
+            <div class="chips" id="recent-muscles" hx-get="/muscles/recent" hx-trigger="load, every 30s" hx-swap="outerHTML">
+                {{ template "_muscle_chips.html" .RecentMuscles }}
+            </div>
+        </article>
+        <article class="card">
+            <header><strong>This week</strong></header>
+            <ul class="list-unstyled">
+                <li><span class="muted">Sessions</span> <strong>{{ .KPI.Sessions }}</strong></li>
+                <li><span class="muted">Unique muscles</span> <strong>{{ .KPI.UniqueMuscles }}</strong></li>
+                <li><span class="muted">Run volume</span> <strong>{{ .KPI.RunKM }} km</strong></li>
+            </ul>
+        </article>
+    </aside>
+</div>
+{{ end }}
+{{ define "dashboard.html" }}
+{{ template "base" . }}   <!-- renders base, which now pulls in the defined content -->
+{{ end }}

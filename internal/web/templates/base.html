@@ -1,0 +1,48 @@
+// ===============================
+// web/templates/base.html
+// ===============================
+// (copy of your base structure; referenced by other templates)
+{{ define "base" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smartsplit</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <style>
+        :root { --pico-primary: #4f46e5; --pico-primary-underline:#3730a3; }
+        header .logo { font-weight:700; letter-spacing:.3px; }
+        .wrap { max-width: 1100px; margin-inline:auto; }
+        .grid { display:grid; gap:1rem; }
+        @media (min-width: 980px){ .grid { grid-template-columns: 2fr 1fr; } }
+        .card { border:1px solid var(--pico-muted-border-color); border-radius:.8rem; padding:1rem; }
+        .muted { color: var(--pico-muted-color); }
+        .hero { display:grid; gap:.8rem; padding:1.2rem; border-radius:1rem; background: var(--pico-card-background-color); border:1px solid var(--pico-muted-border-color); }
+        .chips { display:flex; flex-wrap:wrap; gap:.5rem; }
+        .chip { display:inline-flex; gap:.4rem; align-items:center; padding:.25rem .6rem; border:1px solid var(--pico-muted-border-color); border-radius:999px; font-size:.9rem; }
+        .big { font-size:1.15rem; font-weight:600; }
+        .list-unstyled { list-style:none; padding:0; margin:0; }
+        .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--pico-muted-border-color); border-radius:.3rem; padding:.05rem .35rem; }
+    </style>
+</head>
+<body>
+<header class="wrap">
+    <nav>
+        <ul><li class="logo">Smartsplit</li></ul>
+        <ul>
+            <li><a href="/" aria-current="page">Dashboard</a></li>
+            <li><a href="/muscles">Muscles</a></li>
+            <li><a href="/history">History</a></li>
+            <li><a href="/settings">Settings</a></li>
+        </ul>
+    </nav>
+</header>
+<main class="wrap">
+    {{ block "content" . }}{{ end }}
+</main>
+</body>
+</html>
+{{ end }}
