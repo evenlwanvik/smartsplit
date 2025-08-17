@@ -31,11 +31,18 @@ type MuscleRank struct {
 }
 
 type Plan struct {
-	ID      int         `json:"id"`
-	UserID  int         `json:"user_id"`
-	Date    time.Time   `json:"date"`
-	Notes   string      `json:"notes,omitempty"`
-	Entries []PlanEntry `json:"entries,omitempty"`
+	ID        int          `json:"id"`
+	UserID    int          `json:"user_id"`
+	Date      time.Time    `json:"date"`
+	CreatedAt time.Time    `json:"created_at"`
+	Notes     string       `json:"notes,omitempty"`
+	Entries   []*PlanEntry `json:"entries,omitempty"`
+}
+
+type PlanInput struct {
+	UserID int       `json:"user_id"`
+	Date   time.Time `json:"date"`
+	Notes  string    `json:"notes,omitempty"`
 }
 
 type PlanEntry struct {
@@ -44,4 +51,5 @@ type PlanEntry struct {
 	MuscleID  int       `json:"muscle_id"`
 	Sets      int       `json:"sets"`
 	CreatedAt time.Time `json:"created_at"`
+	Muscle    *Muscle   `json:"muscle,omitempty"`
 }

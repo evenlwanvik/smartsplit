@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS identity.users;
+DROP TABLE IF EXISTS auth.users;

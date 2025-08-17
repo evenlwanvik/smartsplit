@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/identity"
+	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/auth"
 	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/web"
 	"github.com/evenlwanvik/smartsplit/cmd/smartsplit/workout"
 
@@ -83,9 +83,9 @@ func run() error {
 		logger,
 		cfg,
 		monolith.Modules{
-			Identity: &identity.Module{},
-			Web:      &web.Module{},
-			Workout:  &workout.Module{},
+			Auth:    &auth.Module{},
+			Web:     &web.Module{},
+			Workout: &workout.Module{},
 		},
 	)
 

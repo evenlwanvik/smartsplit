@@ -1,4 +1,4 @@
-package identity
+package auth
 
 import (
 	"context"
@@ -21,23 +21,23 @@ func (h *UserHandler) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 
 	routeDefinitions := rest.RouteDefinitionList{
 		{
-			"GET /api/v0/identity/users",
+			"GET /api/v0/auth/users",
 			h.listUsersHandler,
 		},
 		{
-			"GET /api/v0/identity/users/{id}",
+			"GET /api/v0/auth/users/{id}",
 			h.getUserHandler,
 		},
 		{
-			"PUT /api/v0/identity/users/{id}",
+			"PUT /api/v0/auth/users/{id}",
 			h.updateUserHandler,
 		},
 		{
-			"DELETE /api/v0/identity/users/{id}",
+			"DELETE /api/v0/auth/users/{id}",
 			h.deleteUserHandler,
 		},
 		{
-			"POST /api/v0/identity/users/register",
+			"POST /api/v0/auth/users/register",
 			h.RegisterUserHandler,
 		},
 	}

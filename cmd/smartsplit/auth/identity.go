@@ -1,4 +1,4 @@
-package identity
+package auth
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/evenlwanvik/smartsplit/internal/identity"
+	"github.com/evenlwanvik/smartsplit/internal/auth"
 	"github.com/evenlwanvik/smartsplit/internal/monolith"
 )
 
-const moduleName string = "identity"
+const moduleName string = "auth"
 
 type Module struct {
 	logger   *slog.Logger
@@ -18,7 +18,7 @@ type Module struct {
 	version  string
 	db       *sql.DB
 	mux      *http.ServeMux
-	handlers identity.UserHandler
+	handlers auth.UserHandler
 }
 
 func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
@@ -27,9 +27,9 @@ func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.logger.Info("injecting database connection pool")
 	m.db = mono.DB()
 
-	m.handlers = identity.UserHandler{
-		Service: identity.NewUserService(
-			identity.NewUserRepository(m.db),
+	m.handlers = auth.UserHandler{
+		Service: auth.NewUserService(
+			auth.NewUserRepository(m.db),
 		),
 	}
 

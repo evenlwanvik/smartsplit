@@ -8,10 +8,6 @@ import (
 	"github.com/evenlwanvik/smartsplit/internal/workout"
 )
 
-type WebClient interface {
-	ShowIndex(w http.ResponseWriter) error
-}
-
 // WebService handles business logic for web pages.
 // TODO: Rename to not use same name as package
 type WebService struct {
@@ -77,4 +73,14 @@ func (svc *WebService) Dashboard(ctx context.Context, w http.ResponseWriter) err
 
 type MuscleInput struct {
 	Muscles []*workout.Muscle
+}
+
+func (svc *WebService) NewPlan(
+	ctx context.Context, w http.ResponseWriter, muscleIds []int,
+) error {
+	plan, err := svc.workout.CreatePlanWithEntries(ctx, "SomeNote", muscleIds)
+	if err != nil {
+		return err
+	}
+	return svc.tpl.ExecuteTemplate(w, "_plan_entries_form.html", plan)
 }

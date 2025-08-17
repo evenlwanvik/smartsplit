@@ -10,31 +10,43 @@
             <header style="display:flex; justify-content:space-between; align-items:center;">
                 <strong>New workout</strong>
             </header>
-            <button data-target="new-workout-modal" onclick="document.getElementById('new-workout-modal').showModal()">
+
+            <button onclick="document.getElementById('new-workout-modal').showModal()">
                 New workout
             </button>
+
+            <!-- Modal -->
             <dialog id="new-workout-modal">
                 <article>
-                    <header>
-                        <strong>Select muscles</strong>
+                    <header style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong>Create workout</strong>
                         <button onclick="this.closest('dialog').close()" aria-label="Close">✕</button>
                     </header>
-                    <form hx-post="/plans" hx-target="#recent-plans" hx-swap="beforebegin" method="dialog">
-                        <fieldset>
-                            <legend>Choose muscle groups:</legend>
-                            <div class="chips">
-                                {{ range .Muscles }}  <!-- Assuming your Go template provides .Muscles -->
-                                <label class="chip">
-                                    <input type="checkbox" name="muscles" value="{{ .Name }}">
-                                    {{ .Name }}
-                                </label>
-                                {{ end }}
-                            </div>
-                        </fieldset>
-                        <footer>
-                            <button type="submit">Log workout</button>
-                        </footer>
-                    </form>
+
+                    <!-- This body swaps between Step 1 and Step 2 -->
+                    <div id="modal-body">
+                        <!-- Step 1: choose muscles -->
+                        <form
+                                hx-post="/plans/new"
+                                hx-target="#modal-body"
+                                hx-swap="innerHTML">
+                            <fieldset>
+                                <legend class="big">Select muscles</legend>
+                                <div class="chips">
+                                    {{ range .Muscles }}  <!-- server provided list -->
+                                    <label class="chip">
+                                        <input type="checkbox" name="muscles" value="{{ .ID }}">
+                                        {{ .Name }}
+                                    </label>
+                                    {{ end }}
+                                </div>
+                            </fieldset>
+                            <footer style="display:flex; gap:.5rem; justify-content:flex-end;">
+                                <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
+                                <button type="submit">Continue</button>
+                            </footer>
+                        </form>
+                    </div>
                 </article>
             </dialog>
         </article>

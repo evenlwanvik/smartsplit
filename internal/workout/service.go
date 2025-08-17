@@ -2,10 +2,12 @@ package workout
 
 import (
 	"context"
+	"time"
 )
 
 type Client interface {
 	ReadMuscles(ctx context.Context) ([]*Muscle, error)
+	CreatePlanWithEntries(context.Context, string, []int) (*Plan, error)
 }
 
 type Service struct {
@@ -30,12 +32,39 @@ func (s *Service) CreateMuscle(ctx context.Context, input *MuscleInput) (*Muscle
 
 func (s *Service) CreatePlanWithEntries(
 	ctx context.Context,
-	input *Plan,
+	notes string,
+	musclesIds []int,
 ) (*Plan, error) {
-	plan, err := s.repo.InsertPlan(ctx, input)
+	planInput := PlanInput{
+		Notes: notes,
+		// Properly set user ID.
+		UserID: 1,
+		// TODO: Let user choose date
+		Date: time.Now(),
+	}
+	// TODO: Setup transactions
+	plan, err := s.repo.InsertPlan(ctx, planInput)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Also accept entries and insert them?
+
+	var entries []*PlanEntry
+	for _, muscleID := range musclesIds {
+		entryInput := PlanEntry{
+			MuscleID: muscleID,
+			Sets:     1,
+			PlanID:   plan.ID,
+		}
+		entry, err := s.repo.InsertPlanEntry(ctx, entryInput)
+		if err != nil {
+			return nil, err
+		}
+		entry.Muscle, err = s.repo.SelectMuscle(ctx, muscleID)
+		if err != nil {
+			return nil, err
+		}
+		entries = append(entries, entry)
+	}
+	plan.Entries = entries
 	return plan, nil
 }

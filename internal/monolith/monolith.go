@@ -18,12 +18,12 @@ type Monolith interface {
 }
 
 type Modules struct {
-	Identity Identity
-	Web      Web
-	Workout  Workout
+	Auth    Auth
+	Web     Web
+	Workout Workout
 }
 
-type Identity interface{}
+type Auth interface{}
 type Web interface{}
 type Workout interface {
 	workout.Client

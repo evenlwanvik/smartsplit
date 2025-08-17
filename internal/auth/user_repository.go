@@ -1,4 +1,4 @@
-package identity
+package auth
 
 import (
 	"context"
@@ -21,10 +21,10 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-// Create inserts a new user into the identity.user table.
+// Create inserts a new user into the auth.user table.
 func (r *UserRepository) Create(ctx context.Context, user *CreateUser) (*User, error) {
 	query := `
-	INSERT INTO identity.user (
+	INSERT INTO auth.user (
 		email, first_name, last_name, username, password_hash
 	)
 	VALUES ($1, $2, $3, $4, $5)
@@ -62,7 +62,7 @@ func (r *UserRepository) Create(ctx context.Context, user *CreateUser) (*User, e
 func (r *UserRepository) GetByID(ctx context.Context, id int) (*User, error) {
 	query := `
 	SELECT id, email, first_name, last_name, username, password_hash, created_at, updated_at
-	FROM identity.user
+	FROM auth.user
 	WHERE id = $1
 	`
 	var u User
@@ -87,11 +87,11 @@ func (r *UserRepository) GetByID(ctx context.Context, id int) (*User, error) {
 	return &u, err
 }
 
-// List retrieves all users from the identity.user table.
+// List retrieves all users from the auth.user table.
 func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 	query := `
 	SELECT id, email, first_name, last_name, username, password_hash, created_at, updated_at
-	FROM identity.user
+	FROM auth.user
 	ORDER BY created_at DESC
 	`
 	rows, err := r.db.QueryContext(ctx, query)
@@ -127,7 +127,7 @@ func (r *UserRepository) List(ctx context.Context) ([]*User, error) {
 // Update modifies an existing user's details.
 func (r *UserRepository) Update(ctx context.Context, id int, user *UpdateUser) (*User, error) {
 	query := `
-	UPDATE identity.user
+	UPDATE auth.user
 	SET
 		email = $2,
 		first_name = $3,
@@ -182,7 +182,7 @@ func (r *UserRepository) Delete(ctx context.Context, id int) (*User, error) {
 	// TODO: also remove associated workout records in workout schema
 
 	deleteQuery := `
-	DELETE FROM identity.user WHERE id = $1
+	DELETE FROM auth.user WHERE id = $1
 	RETURNING id, email, first_name, last_name, username, password_hash, created_at, updated_at
 	`
 

@@ -15,6 +15,22 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
+func (r *Repository) SelectMuscle(ctx context.Context, id int) (*Muscle, error) {
+	const query = `
+SELECT id, name, muscle_group, description
+FROM workout.muscles
+WHERE id = $1;
+`
+	var muscle Muscle
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&muscle.ID,
+		&muscle.Name,
+		&muscle.Group,
+		&muscle.Description,
+	)
+	return &muscle, err
+}
+
 // SelectMuscles returns slice of muscles.
 func (r *Repository) SelectMuscles(ctx context.Context) ([]*Muscle, error) {
 	// TODO: Make muscles user specific. Maybe in a later version.
@@ -110,7 +126,7 @@ RETURNING id, user_id, muscle_id, rank, updated_at;
 // SelectPlans returns a slice of workout plans.
 func (r *Repository) SelectPlans(ctx context.Context, filters Filters) ([]*Plan, error) {
 	const query = `
-SELECT id, user_id, date, notes
+SELECT id, user_id, date, created_at, notes
 FROM workout.plans
 WHERE (user_id = :user_id OR :user_id IS NULL);
 `
@@ -123,7 +139,7 @@ WHERE (user_id = :user_id OR :user_id IS NULL);
 	var plans []*Plan
 	for rows.Next() {
 		p := new(Plan)
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Date, &p.Notes); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Date, &p.CreatedAt, &p.Notes); err != nil {
 			return nil, err
 		}
 		plans = append(plans, p)
@@ -135,15 +151,15 @@ WHERE (user_id = :user_id OR :user_id IS NULL);
 }
 
 // InsertPlan inserts a new workout plan and returns its ID.
-func (r *Repository) InsertPlan(ctx context.Context, input *Plan) (*Plan, error) {
+func (r *Repository) InsertPlan(ctx context.Context, input PlanInput) (*Plan, error) {
 	const query = `
 INSERT INTO workout.plans (user_id, date, notes)
-VALUES ($1, $2, $3)
+VALUES ($1, NOW(), $2)
 RETURNING id, user_id, date, notes;
 `
 	var plan Plan
-	err := r.db.QueryRowContext(ctx, query, input.UserID, input.Date, input.Notes).Scan(
-		plan.ID, plan.UserID, plan.Date, plan.Notes,
+	err := r.db.QueryRowContext(ctx, query, input.UserID, input.Notes).Scan(
+		&plan.ID, &plan.UserID, &plan.Date, &plan.Notes,
 	)
 	return &plan, err
 }
@@ -151,8 +167,8 @@ RETURNING id, user_id, date, notes;
 // SelectPlanEntries returns a slice of plan entries.
 func (r *Repository) SelectPlanEntries(ctx context.Context, filters Filters) ([]*PlanEntry, error) {
 	const query = `
-SELECT id, workout_id, muscle_id, sets, created_at
-FROM workout.plans_entries
+SELECT id, plan_id, muscle_id, sets, created_at
+FROM workout.plan_entries
 WHERE (user_id = :user_id OR :user_id IS NULL)
 AND (plan_id = :plan_id OR :plan_id IS NULL);
 `
@@ -182,9 +198,9 @@ AND (plan_id = :plan_id OR :plan_id IS NULL);
 }
 
 // InsertPlanEntry creates a new plan entry; returns error if duplicate.
-func (r *Repository) InsertPlanEntry(ctx context.Context, input *PlanEntry) (*PlanEntry, error) {
+func (r *Repository) InsertPlanEntry(ctx context.Context, input PlanEntry) (*PlanEntry, error) {
 	const query = `
-INSERT INTO workout.plans_entries (workout_id, muscle_id, sets)
+INSERT INTO workout.plan_entries (plan_id, muscle_id, sets)
 VALUES ($1, $2, $3)
 RETURNING id, created_at, plan_id, muscle_id, sets;
 `
