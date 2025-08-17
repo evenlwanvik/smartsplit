@@ -17,3 +17,7 @@ func (m *Module) CreatePlanWithEntries(
 ) (*workout.Plan, error) {
 	return m.svc.CreatePlanWithEntries(ctx, notes, musclesIds)
 }
+
+func (m *Module) UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*workout.PlanEntry, error) {
+	return m.svc.UpdatePlanEntrySets(ctx, id, sets)
+}

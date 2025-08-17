@@ -4,26 +4,18 @@
         hx-swap="beforebegin"
         _="on htmx:afterRequest if detail.successful then
         document.getElementById('new-workout-modal').close()">
-
-    <input type="hidden" name="plan_id" value="{{ .ID }}">
-
     <fieldset class="grid" style="grid-template-columns:1fr;">
         <legend class="big">Add details</legend>
 
         {{ range $i, $m := .Entries }}
         <article class="card">
             <header><strong>{{ $m.Muscle.Name }}</strong></header>
-            <input type="hidden" name="muscle" value="{{ $m.Sets }}">
+            <input type="hidden" name="entry" value="{{ $m.ID }}">
 
             <div class="grid" style="grid-template-columns: 1fr;">
                 <label>
                     Sets
                     <input type="number" name="sets" min="1" step="1" placeholder="e.g. 4" required>
-                </label>
-
-                <label>
-                    Notes <small class="muted">(optional)</small>
-                    <textarea name="notes" rows="2" placeholder="e.g. 4×8 @ RPE 7, tempo 3-1-1"></textarea>
                 </label>
             </div>
         </article>

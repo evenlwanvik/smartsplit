@@ -214,3 +214,20 @@ RETURNING id, created_at, plan_id, muscle_id, sets;
 	).Scan(&pe.ID, &pe.CreatedAt, &pe.PlanID, &pe.MuscleID, &pe.Sets)
 	return &pe, err
 }
+
+func (r *Repository) PatchPlanEntry(ctx context.Context, input PlanEntryPatch) (*PlanEntry, error) {
+	const query = `
+UPDATE workout.plan_entries
+SET sets = $2
+WHERE id = $1
+RETURNING id, created_at, plan_id, muscle_id, sets;
+`
+	var pe PlanEntry
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		input.ID,
+		input.Sets,
+	).Scan(&pe.ID, &pe.CreatedAt, &pe.PlanID, &pe.MuscleID, &pe.Sets)
+	return &pe, err
+}

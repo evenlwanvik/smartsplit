@@ -53,3 +53,8 @@ type PlanEntry struct {
 	CreatedAt time.Time `json:"created_at"`
 	Muscle    *Muscle   `json:"muscle,omitempty"`
 }
+
+type PlanEntryPatch struct {
+	ID   int `json:"id"`
+	Sets int `json:"sets"`
+}

@@ -7,7 +7,8 @@ import (
 
 type Client interface {
 	ReadMuscles(ctx context.Context) ([]*Muscle, error)
-	CreatePlanWithEntries(context.Context, string, []int) (*Plan, error)
+	CreatePlanWithEntries(ctx context.Context, notes string, muscleIDs []int) (*Plan, error)
+	UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*PlanEntry, error)
 }
 
 type Service struct {
@@ -67,4 +68,20 @@ func (s *Service) CreatePlanWithEntries(
 	}
 	plan.Entries = entries
 	return plan, nil
+}
+
+func (s *Service) UpdatePlanEntrySets(
+	ctx context.Context,
+	id int,
+	sets int,
+) (*PlanEntry, error) {
+	planEntryPatch := PlanEntryPatch{
+		ID:   id,
+		Sets: sets,
+	}
+	entry, err := s.repo.PatchPlanEntry(ctx, planEntryPatch)
+	if err != nil {
+		return nil, err
+	}
+	return entry, nil
 }

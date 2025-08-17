@@ -13,27 +13,25 @@ import (
 const moduleName string = "web"
 
 type Module struct {
-	logger   *slog.Logger
-	name     string
-	version  string
-	mux      *http.ServeMux
-	handlers web.WebHandlers
-	workout  workout.Client
+	logger  *slog.Logger
+	name    string
+	version string
+	mux     *http.ServeMux
+	web     web.Service
+	workout workout.Client
 }
 
 func (m *Module) Setup(ctx context.Context, mono monolith.Monolith) {
 	m.initModuleLogger(mono.Logger())
 
-	m.handlers = web.WebHandlers{
-		Service: web.NewWebService(mono.Modules().Workout),
-	}
+	m.web = web.NewService(mono.Modules().Workout)
 
 	// TODO: We have to wait for the monolith to be fully initialized before we can inject modules
 	m.logger.Info("injecting mux")
 	m.mux = mono.Mux()
 
 	m.logger.Info("registering routes")
-	m.handlers.RegisterRoutes(ctx, m.mux)
+	m.web.RegisterRoutes(ctx, m.mux)
 }
 
 func (m *Module) PostSetup() {
