@@ -164,6 +164,20 @@ RETURNING id, user_id, date, notes;
 	return &plan, err
 }
 
+// DeletePlan deletes a workout plan by ID; returns deleted plan.
+func (r *Repository) DeletePlan(ctx context.Context, id int) (*Plan, error) {
+	const query = `
+DELETE FROM workout.plans
+WHERE id = $1
+RETURNING id, user_id, date, created_at, notes;
+`
+	var plan Plan
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&plan.ID, &plan.UserID, &plan.Date, &plan.CreatedAt, &plan.Notes,
+	)
+	return &plan, err
+}
+
 // SelectPlanEntries returns a slice of plan entries.
 func (r *Repository) SelectPlanEntries(ctx context.Context, filters Filters) ([]*PlanEntry, error) {
 	const query = `
@@ -195,6 +209,25 @@ AND (plan_id = :plan_id OR :plan_id IS NULL);
 		return nil, err
 	}
 	return entries, nil
+}
+
+// DeleteManyPlanEntries deletes plan entries by filters; returns number of deleted entries.
+func (r *Repository) DeleteManyPlanEntries(ctx context.Context, filters Filters) (int64, error) {
+	const query = `
+DELETE FROM workout.plan_entries
+WHERE (plan_id = :plan_id OR :plan_id IS NULL)
+AND (muscle_id = :muscle_id OR :muscle_id IS NULL);
+`
+	result, err := r.db.ExecContext(
+		ctx,
+		query,
+		sql.Named("plan_id", filters.PlanID),
+		sql.Named("muscle_id", filters.MuscleID),
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 // InsertPlanEntry creates a new plan entry; returns error if duplicate.

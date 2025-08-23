@@ -2,7 +2,10 @@ package workout
 
 import (
 	"context"
+	"log/slog"
 	"time"
+
+	"github.com/evenlwanvik/smartsplit/internal/logging"
 )
 
 type Client interface {
@@ -84,4 +87,25 @@ func (s *Service) UpdatePlanEntrySets(
 		return nil, err
 	}
 	return entry, nil
+}
+
+func (s *Service) DeletePlan(ctx context.Context, id int) error {
+	logger := logging.LoggerFromContext(ctx)
+	logger = logger.With(slog.Group("DeletePlan", slog.Int("plan_id", id)))
+
+	// TODO: Introduce transactions
+	nDeleted, err := s.repo.DeleteManyPlanEntries(ctx, Filters{PlanID: &id})
+	if err != nil {
+		logger.Error("failed to delete plan entries", slog.Any("error", err))
+		return err
+	}
+	logger.Info("deleted plan entries", slog.Int64("n_deleted", nDeleted))
+
+	_, err = s.repo.DeletePlan(ctx, id)
+	if err != nil {
+		logger.Error("failed to delete plan", slog.Any("error", err))
+		return err
+	}
+	logger.Info("deleted plan")
+	return nil
 }

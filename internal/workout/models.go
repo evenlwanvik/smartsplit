@@ -5,8 +5,9 @@ import (
 )
 
 type Filters struct {
-	UserID *int `json:"user_id,omitempty"`
-	PlanID *int `json:"plan,omitempty"`
+	UserID   *int `json:"user_id,omitempty"`
+	PlanID   *int `json:"plan,omitempty"`
+	MuscleID *int `json:"muscle,omitempty"`
 }
 
 type Muscle struct {
