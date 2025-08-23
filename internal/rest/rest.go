@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -246,4 +247,16 @@ func RespondWithJSON(
 	if _, err = w.Write(js); err != nil {
 		ServerErrorResponse(w, r, err)
 	}
+}
+
+func ReadIntParameter(key string, r *http.Request) (int, error) {
+	s := r.PathValue(key)
+	if s == "" {
+		return 0, fmt.Errorf("empty string parameter")
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("invalid integer parameter")
+	}
+	return i, nil
 }

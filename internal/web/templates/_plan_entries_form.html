@@ -23,7 +23,15 @@
     </fieldset>
 
     <footer style="display:flex; gap:.5rem; justify-content:flex-end;">
-        <button type="button" onclick="document.getElementById('new-workout-modal').close()">Cancel</button>
+        <button type="button"
+                hx-delete="/plans/{{ .ID }}"
+                hx-swap="none"
+                _="on htmx:afterRequest if detail.successful then
+                document.getElementById('new-workout-modal').close()
+             else
+                alert('Could not cancel — please try again')">
+            Cancel
+        </button>
         <button type="submit">Save workout</button>
     </footer>
 </form>

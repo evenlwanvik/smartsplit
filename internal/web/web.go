@@ -38,6 +38,10 @@ func (svc *Service) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 			svc.newPlanPage,
 		},
 		{
+			"DELETE /plans/{id}",
+			svc.deletePlan,
+		},
+		{
 			"POST /plans/entries",
 			svc.planEntriesPage,
 		},
@@ -148,6 +152,24 @@ func (svc *Service) newPlanPage(w http.ResponseWriter, r *http.Request) {
 		rest.InternalServerErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (svc *Service) deletePlan(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	id, err := rest.ReadIntParameter("id", r)
+	if err != nil {
+		rest.BadRequestResponse(w, r, "invalid id", err)
+		return
+	}
+
+	err = svc.workout.DeletePlan(ctx, id)
+	if err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (svc *Service) planEntriesPage(w http.ResponseWriter, r *http.Request) {

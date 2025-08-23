@@ -21,3 +21,7 @@ func (m *Module) CreatePlanWithEntries(
 func (m *Module) UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*workout.PlanEntry, error) {
 	return m.svc.UpdatePlanEntrySets(ctx, id, sets)
 }
+
+func (m *Module) DeletePlan(ctx context.Context, id int) error {
+	return m.svc.DeletePlan(ctx, id)
+}

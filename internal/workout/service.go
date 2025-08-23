@@ -12,6 +12,7 @@ type Client interface {
 	ReadMuscles(ctx context.Context) ([]*Muscle, error)
 	CreatePlanWithEntries(ctx context.Context, notes string, muscleIDs []int) (*Plan, error)
 	UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*PlanEntry, error)
+	DeletePlan(ctx context.Context, id int) error
 }
 
 type Service struct {

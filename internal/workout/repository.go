@@ -183,14 +183,14 @@ func (r *Repository) SelectPlanEntries(ctx context.Context, filters Filters) ([]
 	const query = `
 SELECT id, plan_id, muscle_id, sets, created_at
 FROM workout.plan_entries
-WHERE (user_id = :user_id OR :user_id IS NULL)
-AND (plan_id = :plan_id OR :plan_id IS NULL);
+WHERE (user_id = $1 OR $1 IS NULL)
+AND (plan_id = $2 OR $2 IS NULL);
 `
 	rows, err := r.db.QueryContext(
 		ctx,
 		query,
-		sql.Named("user_id", filters.UserID),
-		sql.Named("plan_id", filters.PlanID),
+		filters.UserID,
+		filters.PlanID,
 	)
 	if err != nil {
 		return nil, err
@@ -215,14 +215,14 @@ AND (plan_id = :plan_id OR :plan_id IS NULL);
 func (r *Repository) DeleteManyPlanEntries(ctx context.Context, filters Filters) (int64, error) {
 	const query = `
 DELETE FROM workout.plan_entries
-WHERE (plan_id = :plan_id OR :plan_id IS NULL)
-AND (muscle_id = :muscle_id OR :muscle_id IS NULL);
+WHERE (plan_id = $1 OR $1 IS NULL)
+AND (muscle_id = $2 OR $2 IS NULL);
 `
 	result, err := r.db.ExecContext(
 		ctx,
 		query,
-		sql.Named("plan_id", filters.PlanID),
-		sql.Named("muscle_id", filters.MuscleID),
+		filters.PlanID,
+		filters.MuscleID,
 	)
 	if err != nil {
 		return 0, err

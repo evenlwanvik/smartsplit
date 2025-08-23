@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+// TODO: We need to use sql.NullString and sql.NullInt64 for nullable fields
+// Hence we need a repo DTO layer to convert between the two.
+
 type Filters struct {
 	UserID   *int `json:"user_id,omitempty"`
 	PlanID   *int `json:"plan,omitempty"`
