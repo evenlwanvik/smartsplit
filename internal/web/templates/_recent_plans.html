@@ -1,0 +1,22 @@
+{{/* _recent_plans.html */}}
+{{ if . }}
+{{ range . }}
+<li>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>Workout {{ .Plan.ID }}</strong>
+        <small class="muted">{{ .PerformedAt }}</small>
+    </div>
+
+    <ul class="list-inline" style="margin-top:.5rem;">
+        {{ range .Plan.Entries }}
+        <li>
+            <span class="chip">{{ .Muscle.Name }}</span>
+            <strong>{{ .Sets }} Sets</strong>
+        </li>
+        {{ end }}
+    </ul>
+</li>
+{{ end }}
+{{ else }}
+<li class="muted">No workouts yet.</li>
+{{ end }}

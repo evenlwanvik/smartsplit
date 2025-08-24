@@ -12,6 +12,7 @@ type Client interface {
 	ReadMuscles(ctx context.Context) ([]*Muscle, error)
 	CreatePlanWithEntries(ctx context.Context, notes string, muscleIDs []int) (*Plan, error)
 	UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*PlanEntry, error)
+	ListPLans(ctx context.Context, filters Filters) ([]*Plan, error)
 	DeletePlan(ctx context.Context, id int) error
 }
 
@@ -88,6 +89,37 @@ func (s *Service) UpdatePlanEntrySets(
 		return nil, err
 	}
 	return entry, nil
+}
+
+func (s *Service) ListPLans(ctx context.Context, filters Filters) ([]*Plan, error) {
+	logger := logging.LoggerFromContext(ctx)
+
+	logger = logger.With(slog.Group("ListPlans", slog.Any("filters", filters)))
+
+	plans, err := s.repo.SelectPlans(ctx, filters)
+	if err != nil {
+		logger.Error("failed to list plans", slog.Any("error", err))
+		return nil, err
+	}
+	for _, plan := range plans {
+		entries, err := s.repo.SelectPlanEntries(ctx, Filters{PlanID: &plan.ID})
+		if err != nil {
+			logger.Error(
+				"failed to list plan entries for plan",
+				slog.Int("plan_id", plan.ID),
+				slog.Any("error", err))
+			return nil, err
+		}
+		for _, entry := range entries {
+			muscle, err := s.repo.SelectMuscle(ctx, entry.MuscleID)
+			if err != nil {
+				return nil, err
+			}
+			entry.Muscle = muscle
+		}
+		plan.Entries = entries
+	}
+	return plans, nil
 }
 
 func (s *Service) DeletePlan(ctx context.Context, id int) error {

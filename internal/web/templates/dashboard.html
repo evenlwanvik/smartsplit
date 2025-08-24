@@ -53,7 +53,8 @@
         <article class="card">
             <header><strong>Recent activity</strong></header>
             <ol id="recent-plans" class="list-unstyled" hx-get="/plans/recent" hx-trigger="load" hx-swap="innerHTML">
-                <li class="muted">Loading…</li>
+                <!-- Fetch last 5 plans with its entries -->
+                {{ template "_recent_plans.html" }}
             </ol>
             <footer><a href="/history">See history →</a></footer>
         </article>

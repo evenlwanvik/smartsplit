@@ -25,3 +25,7 @@ func (m *Module) UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*wo
 func (m *Module) DeletePlan(ctx context.Context, id int) error {
 	return m.svc.DeletePlan(ctx, id)
 }
+
+func (m *Module) ListPLans(ctx context.Context, filters workout.Filters) ([]*workout.Plan, error) {
+	return m.svc.ListPLans(ctx, filters)
+}

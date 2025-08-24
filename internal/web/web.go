@@ -2,9 +2,11 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/evenlwanvik/smartsplit/internal/logging"
 	"github.com/evenlwanvik/smartsplit/internal/rest"
@@ -44,6 +46,10 @@ func (svc *Service) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 		{
 			"POST /plans/entries",
 			svc.planEntriesPage,
+		},
+		{
+			"GET /plans/recent",
+			svc.recentPlans,
 		},
 	}
 
@@ -205,4 +211,47 @@ func (svc *Service) planEntriesPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info("this is the form", "muscle", r.PostForm)
+}
+
+type RecentPlansVM struct {
+	Plan        *workout.Plan
+	PerformedAt string
+}
+
+func humanizeTime(t time.Time) string {
+	now := time.Now()
+	d := now.Sub(t)
+	switch {
+	case d < time.Minute:
+		return "just now"
+	case d < time.Hour:
+		return fmt.Sprintf("%d min ago", int(d.Minutes()))
+	case d < 24*time.Hour:
+		return fmt.Sprintf("%d h ago", int(d.Hours()))
+	default:
+		return t.Format("2006-01-02 15:04")
+	}
+}
+
+func (svc *Service) recentPlans(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+	nPlans := 5
+	userID := 1
+	logger.Info("fetching recent plans", "nPlans", nPlans)
+	plans, err := svc.workout.ListPLans(ctx, workout.Filters{PageSize: &nPlans, UserID: &userID})
+	if err != nil {
+		rest.BadRequestResponse(w, r, "could not list plans", err)
+		return
+	}
+	var recentPlansVM []*RecentPlansVM
+	for _, p := range plans {
+		recentPlansVM = append(recentPlansVM, &RecentPlansVM{p, humanizeTime(p.CreatedAt)})
+	}
+	err = svc.tpl.ExecuteTemplate(w, "_recent_plans.html", recentPlansVM)
+	if err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
 }

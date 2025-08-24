@@ -128,9 +128,16 @@ func (r *Repository) SelectPlans(ctx context.Context, filters Filters) ([]*Plan,
 	const query = `
 SELECT id, user_id, date, created_at, notes
 FROM workout.plans
-WHERE (user_id = :user_id OR :user_id IS NULL);
+WHERE (user_id = $1 OR $1 IS NULL)
+ORDER BY date ASC
+LIMIT $2;
 `
-	rows, err := r.db.QueryContext(ctx, query, sql.Named("user_id", filters.UserID))
+	rows, err := r.db.QueryContext(
+		ctx,
+		query,
+		filters.UserID,
+		filters.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -183,13 +190,11 @@ func (r *Repository) SelectPlanEntries(ctx context.Context, filters Filters) ([]
 	const query = `
 SELECT id, plan_id, muscle_id, sets, created_at
 FROM workout.plan_entries
-WHERE (user_id = $1 OR $1 IS NULL)
-AND (plan_id = $2 OR $2 IS NULL);
+WHERE (plan_id = $1 OR $1 IS NULL);
 `
 	rows, err := r.db.QueryContext(
 		ctx,
 		query,
-		filters.UserID,
 		filters.PlanID,
 	)
 	if err != nil {

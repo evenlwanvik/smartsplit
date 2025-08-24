@@ -11,6 +11,7 @@ type Filters struct {
 	UserID   *int `json:"user_id,omitempty"`
 	PlanID   *int `json:"plan,omitempty"`
 	MuscleID *int `json:"muscle,omitempty"`
+	PageSize *int `json:"page_size,omitempty"`
 }
 
 type Muscle struct {
