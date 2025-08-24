@@ -56,16 +56,16 @@ func logError(r *http.Request, err error) {
 }
 
 // GetQueryParamInt retrieves a query parameter from the request URL.
-func GetQueryParamInt(r *http.Request, key string) (int, error) {
+func GetQueryParamInt(r *http.Request, key string) *int {
 	s := r.URL.Query().Get(key)
 	if s == "" {
-		return 0, ErrQueryParamNotFound
+		return nil
 	}
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, ErrInvalidQueryParam
+		return nil
 	}
-	return i, nil
+	return &i
 }
 
 // GetPathParamInt retrieves a path parameter from the request URL.

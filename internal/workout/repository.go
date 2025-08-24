@@ -124,22 +124,28 @@ RETURNING id, user_id, muscle_id, rank, updated_at;
 }
 
 // SelectPlans returns a slice of workout plans.
-func (r *Repository) SelectPlans(ctx context.Context, filters Filters) ([]*Plan, error) {
+func (r *Repository) SelectPlans(
+	ctx context.Context, filters Filters,
+) ([]*Plan, *Metadata, error) {
 	const query = `
 SELECT id, user_id, date, created_at, notes
 FROM workout.plans
 WHERE (user_id = $1 OR $1 IS NULL)
-ORDER BY date ASC
-LIMIT $2;
+AND (id = $2 OR $2 IS NULL)
+AND (id > $3 OR $3 IS NULL)
+ORDER BY id
+LIMIT $4;
 `
 	rows, err := r.db.QueryContext(
 		ctx,
 		query,
 		filters.UserID,
+		filters.PlanID,
+		filters.LastSeen,
 		filters.PageSize,
 	)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
@@ -147,14 +153,18 @@ LIMIT $2;
 	for rows.Next() {
 		p := new(Plan)
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Date, &p.CreatedAt, &p.Notes); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		plans = append(plans, p)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return plans, nil
+	var metadata Metadata
+	if len(plans) > 0 {
+		metadata.LastSeen = plans[len(plans)-1].ID
+	}
+	return plans, &metadata, nil
 }
 
 // InsertPlan inserts a new workout plan and returns its ID.

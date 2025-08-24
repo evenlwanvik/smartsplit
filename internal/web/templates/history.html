@@ -1,0 +1,33 @@
+{{ define "history.html" }}
+<section class="grid">
+    <div class="card">
+        <header>
+            <h2 class="big">History</h2>
+            <p class="muted">All your saved plans, newest first.</p>
+        </header>
+
+        <ul id="plans" class="list-unstyled" style="display:grid; gap:.75rem;">
+            {{ range .Plans }}
+            <li class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>{{ .ID }}</strong>
+                        <div class="muted">Created {{ .CreatedAt }}</div>
+                    </div>
+                    <a class="contrast" href="/plans/{{ .ID }}">Open</a>
+                </div>
+            </li>
+            {{ end }}
+        </ul>
+    </div>
+
+    <aside class="card">
+        <h3 class="big">Tips</h3>
+        <ul class="list-unstyled">
+            <li>Click <kbd class="kbd">Load more</kbd> to fetch the next page.</li>
+            <li>This page uses a <em>cursor</em>—the backend returns the next cursor each time.</li>
+            <li>All updates are simple HTML fragments (no JSON needed).</li>
+        </ul>
+    </aside>
+</section>
+{{ end }}

@@ -40,6 +40,10 @@ func (svc *Service) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 			svc.newPlanPage,
 		},
 		{
+			"GET /plans/{id}",
+			svc.planPage,
+		},
+		{
 			"DELETE /plans/{id}",
 			svc.deletePlan,
 		},
@@ -50,6 +54,10 @@ func (svc *Service) RegisterRoutes(ctx context.Context, mux *http.ServeMux) {
 		{
 			"GET /plans/recent",
 			svc.recentPlans,
+		},
+		{
+			"GET /history",
+			svc.historyPage,
 		},
 	}
 
@@ -240,7 +248,7 @@ func (svc *Service) recentPlans(w http.ResponseWriter, r *http.Request) {
 	nPlans := 5
 	userID := 1
 	logger.Info("fetching recent plans", "nPlans", nPlans)
-	plans, err := svc.workout.ListPLans(ctx, workout.Filters{PageSize: &nPlans, UserID: &userID})
+	plans, _, err := svc.workout.ListPLans(ctx, workout.Filters{PageSize: &nPlans, UserID: &userID})
 	if err != nil {
 		rest.BadRequestResponse(w, r, "could not list plans", err)
 		return
@@ -250,6 +258,59 @@ func (svc *Service) recentPlans(w http.ResponseWriter, r *http.Request) {
 		recentPlansVM = append(recentPlansVM, &RecentPlansVM{p, humanizeTime(p.CreatedAt)})
 	}
 	err = svc.tpl.ExecuteTemplate(w, "_recent_plans.html", recentPlansVM)
+	if err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+type HistoryVM struct {
+	Plans      []*workout.Plan
+	NextCursor int // nil means no more results
+}
+
+func (svc *Service) historyPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+
+	filters := workout.Filters{
+		LastSeen: rest.GetQueryParamInt(r, "last_seen"),
+		PageSize: rest.GetQueryParamInt(r, "page_size"),
+	}
+
+	logger.Info("fetching plan history", "filters", filters)
+	plans, metadata, err := svc.workout.ListPLans(ctx, filters)
+	if err != nil {
+		rest.BadRequestResponse(w, r, "could not list plans", err)
+		return
+	}
+	data := HistoryVM{plans, metadata.LastSeen}
+	err = svc.tpl.ExecuteTemplate(w, "history.html", data)
+	if err != nil {
+		rest.InternalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (svc *Service) planPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	ctx := r.Context()
+	logger := logging.LoggerFromContext(ctx)
+
+	id, err := rest.ReadIntParameter("id", r)
+	if err != nil {
+		rest.BadRequestResponse(w, r, "invalid id", err)
+		return
+	}
+
+	logger.Info("fetching plan", "id", id)
+	plan, err := svc.workout.ReadPlan(ctx, id)
+	if err != nil {
+		rest.BadRequestResponse(w, r, "could not list plans", err)
+		return
+	}
+	err = svc.tpl.ExecuteTemplate(w, "_plan_item.html", plan)
 	if err != nil {
 		rest.InternalServerErrorResponse(w, r, err)
 		return

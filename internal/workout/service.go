@@ -12,7 +12,8 @@ type Client interface {
 	ReadMuscles(ctx context.Context) ([]*Muscle, error)
 	CreatePlanWithEntries(ctx context.Context, notes string, muscleIDs []int) (*Plan, error)
 	UpdatePlanEntrySets(ctx context.Context, id int, sets int) (*PlanEntry, error)
-	ListPLans(ctx context.Context, filters Filters) ([]*Plan, error)
+	ListPLans(ctx context.Context, filters Filters) ([]*Plan, *Metadata, error)
+	ReadPlan(ctx context.Context, id int) (*Plan, error)
 	DeletePlan(ctx context.Context, id int) error
 }
 
@@ -91,15 +92,17 @@ func (s *Service) UpdatePlanEntrySets(
 	return entry, nil
 }
 
-func (s *Service) ListPLans(ctx context.Context, filters Filters) ([]*Plan, error) {
+func (s *Service) ListPLans(
+	ctx context.Context, filters Filters,
+) ([]*Plan, *Metadata, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	logger = logger.With(slog.Group("ListPlans", slog.Any("filters", filters)))
 
-	plans, err := s.repo.SelectPlans(ctx, filters)
+	plans, metadata, err := s.repo.SelectPlans(ctx, filters)
 	if err != nil {
 		logger.Error("failed to list plans", slog.Any("error", err))
-		return nil, err
+		return nil, nil, err
 	}
 	for _, plan := range plans {
 		entries, err := s.repo.SelectPlanEntries(ctx, Filters{PlanID: &plan.ID})
@@ -108,18 +111,47 @@ func (s *Service) ListPLans(ctx context.Context, filters Filters) ([]*Plan, erro
 				"failed to list plan entries for plan",
 				slog.Int("plan_id", plan.ID),
 				slog.Any("error", err))
-			return nil, err
+			return nil, metadata, err
 		}
 		for _, entry := range entries {
 			muscle, err := s.repo.SelectMuscle(ctx, entry.MuscleID)
 			if err != nil {
-				return nil, err
+				return nil, metadata, err
 			}
 			entry.Muscle = muscle
 		}
 		plan.Entries = entries
 	}
-	return plans, nil
+	return plans, metadata, nil
+}
+
+func (s *Service) ReadPlan(ctx context.Context, id int) (*Plan, error) {
+	logger := logging.LoggerFromContext(ctx)
+	logger = logger.With(slog.Group("ReadPlan", slog.Int("plan_id", id)))
+
+	plans, _, err := s.repo.SelectPlans(ctx, Filters{PlanID: &id})
+	if err != nil {
+		logger.Error("failed to read plan", slog.Any("error", err))
+		return nil, err
+	}
+	plan := plans[0]
+	entries, err := s.repo.SelectPlanEntries(ctx, Filters{PlanID: &plan.ID})
+	if err != nil {
+		logger.Error(
+			"failed to list plan entries for plan",
+			slog.Any("error", err),
+		)
+		return nil, err
+	}
+	for _, entry := range entries {
+		muscle, err := s.repo.SelectMuscle(ctx, entry.MuscleID)
+		if err != nil {
+			return nil, err
+		}
+		entry.Muscle = muscle
+	}
+	plan.Entries = entries
+	return plan, nil
 }
 
 func (s *Service) DeletePlan(ctx context.Context, id int) error {

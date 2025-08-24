@@ -26,6 +26,12 @@ func (m *Module) DeletePlan(ctx context.Context, id int) error {
 	return m.svc.DeletePlan(ctx, id)
 }
 
-func (m *Module) ListPLans(ctx context.Context, filters workout.Filters) ([]*workout.Plan, error) {
+func (m *Module) ListPLans(
+	ctx context.Context, filters workout.Filters,
+) ([]*workout.Plan, *workout.Metadata, error) {
 	return m.svc.ListPLans(ctx, filters)
+}
+
+func (m *Module) ReadPlan(ctx context.Context, id int) (*workout.Plan, error) {
+	return m.svc.ReadPlan(ctx, id)
 }

@@ -1,0 +1,58 @@
+{{ define "_plan_item.html" }}
+<section class="grid">
+    <div class="card">
+        <a href="/history" class="contrast">&larr; Back to History</a>
+
+        <header style="margin-top:.5rem">
+            <h2 class="big">Plan #{{ .ID }}</h2>
+            <p class="muted">
+                For <strong>{{ .Date.Format "2006-01-02" }}</strong> ·
+                Created {{ .CreatedAt.Format "2006-01-02 15:04" }}
+            </p>
+        </header>
+
+        {{ if .Notes }}
+        <article class="hero" style="margin-block:1rem;">
+            <strong>Notes</strong>
+            <p style="margin:0">{{ .Notes }}</p>
+        </article>
+        {{ end }}
+
+        <h3 class="big" style="margin-top:1rem">Entries</h3>
+
+        {{ if .Entries }}
+        <div style="overflow:auto; margin-top:.5rem;">
+            <table role="grid">
+                <thead>
+                <tr>
+                    <th>Muscle</th>
+                    <th class="muted">Group</th>
+                    <th style="width:120px;">Sets</th>
+                </tr>
+                </thead>
+                <tbody id="entries">
+                {{ range .Entries }}
+                <tr id="entry-{{ .ID }}">
+                    <td>
+                        {{ if .Muscle }}<strong>{{ .Muscle.Name }}</strong>{{ else }}<em>Unknown</em>{{ end }}
+                        {{ if and .Muscle .Muscle.Description }}
+                        <details class="muted" style="margin-top:.25rem;">
+                            <summary>description</summary>
+                            <p>{{ .Muscle.Description }}</p>
+                        </details>
+                        {{ end }}
+                    </td>
+                    <td class="muted">{{ if .Muscle }}{{ .Muscle.Group }}{{ end }}</td>
+                    <td class="muted">{{ .Sets }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ else }}
+        <p class="muted">No entries in this plan yet.</p>
+        {{ end }}
+
+    </div>
+</section>
+{{ end }}
